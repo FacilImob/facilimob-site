@@ -51,6 +51,7 @@ document.querySelector('[data-change-email]').addEventListener('click', () => {
   currentEmail = '';
   codeForm.hidden = true;
   form.hidden = false;
+  form.reset();
   form.elements.email.focus();
 });
 
@@ -63,7 +64,6 @@ async function requestCode(email) {
 
 function showCodeStep(email) {
   currentEmail = email;
-  codeForm.elements.email.value = email;
   form.hidden = true;
   codeForm.hidden = false;
   tokenInput.value = '';
