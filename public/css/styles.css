@@ -247,6 +247,22 @@ button {
   text-align: center;
 }
 
+.login-step {
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+.sent-to {
+  background: var(--accent-soft);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+  margin: 0;
+  overflow-wrap: anywhere;
+  padding: 10px 12px;
+}
+
 .error {
   color: var(--danger);
   font-size: 13px;

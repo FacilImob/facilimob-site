@@ -3,8 +3,10 @@ import { api, toast } from './api.js';
 const form = document.querySelector('#loginForm');
 const codeForm = document.querySelector('#codeForm');
 const status = document.querySelector('#status');
-const tokenInput = codeForm.elements.token;
+const sentTo = document.querySelector('[data-sent-to]');
+const tokenInput = codeForm.querySelector('[name="token"]');
 let currentEmail = '';
+let verifying = false;
 
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
@@ -19,9 +21,18 @@ form.addEventListener('submit', async (event) => {
   }
 });
 
-codeForm.addEventListener('submit', async (event) => {
-  event.preventDefault();
+tokenInput.addEventListener('input', async () => {
+  tokenInput.value = tokenInput.value.replace(/\D/g, '').slice(0, 6);
+
+  if (tokenInput.value.length === 6 && !verifying) {
+    await verifyCode();
+  }
+});
+
+async function verifyCode() {
   const token = tokenInput.value.replace(/\D/g, '');
+  verifying = true;
+  tokenInput.disabled = true;
 
   try {
     await api('/api/auth/verify-code', {
@@ -31,12 +42,12 @@ codeForm.addEventListener('submit', async (event) => {
     window.location.href = '/index.html';
   } catch (error) {
     toast(status, error.message, 'error');
+    tokenInput.value = '';
+    tokenInput.disabled = false;
+    tokenInput.focus();
+    verifying = false;
   }
-});
-
-tokenInput.addEventListener('input', () => {
-  tokenInput.value = tokenInput.value.replace(/\D/g, '').slice(0, 6);
-});
+}
 
 document.querySelector('[data-resend]').addEventListener('click', async () => {
   try {
@@ -49,9 +60,12 @@ document.querySelector('[data-resend]').addEventListener('click', async () => {
 
 document.querySelector('[data-change-email]').addEventListener('click', () => {
   currentEmail = '';
+  verifying = false;
   codeForm.hidden = true;
   form.hidden = false;
   form.reset();
+  tokenInput.value = '';
+  tokenInput.disabled = false;
   form.elements.email.focus();
 });
 
@@ -64,8 +78,11 @@ async function requestCode(email) {
 
 function showCodeStep(email) {
   currentEmail = email;
+  verifying = false;
+  sentTo.textContent = `Codigo enviado para ${email}`;
   form.hidden = true;
   codeForm.hidden = false;
   tokenInput.value = '';
+  tokenInput.disabled = false;
   tokenInput.focus();
 }
