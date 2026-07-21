@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Configuracoes | Simulador Facil Imob</title>
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
+    <link rel="stylesheet" href="/css/styles.css">
+  </head>
+  <body>
+    <div class="sidebar-backdrop"></div>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="sidebar-logo">
+          <img src="/assets/logo-facilimob-full-cropped.png" alt="Facil Imob">
+        </div>
+        <nav>
+          <a class="side-link" data-nav="simulacao" href="/index.html"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 16V9"/><path d="M12 16V7"/><path d="M16 16v-4"/></svg>Simulacao</a>
+          <a class="side-link" data-nav="historico" href="/historico.html"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v6h6"/><path d="M12 7v5l3 2"/></svg>Historico</a>
+          <a class="side-link" data-nav="settings" href="/settings.html"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1A2 2 0 1 1 4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1A2 2 0 1 1 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1A2 2 0 1 1 19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.5 1h.1a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>Configuracoes</a>
+        </nav>
+      </aside>
+      <div class="content">
+        <header class="topbar">
+          <div class="brand"><button class="btn ghost mobile-menu" type="button" data-menu aria-label="Abrir menu"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg></button><img class="brand-logo horizontal" src="/assets/logo-facilimob-horizontal-cropped.png" alt="Facil Imob"></div>
+          <div class="user-actions"><span data-user></span><button class="btn" type="button" data-logout>Sair</button></div>
+        </header>
+        <main class="page">
+          <div class="page-header">
+            <div>
+              <h1 class="page-title">Configuracoes</h1>
+              <p class="page-subtitle">Taxas usadas no calculo e dados do Pix estatico.</p>
+            </div>
+          </div>
+          <div id="status" class="status"></div>
+          <section class="panel">
+            <form id="settingsForm" class="settings-grid">
+              <label class="field"><span class="label">Taxa Com FCI (%)</span><input class="input" name="taxa_com_fci" type="number" min="0" step="0.01" required></label>
+              <label class="field"><span class="label">Taxa Sem FCI (%)</span><input class="input" name="taxa_sem_fci" type="number" min="0" step="0.01" required></label>
+              <label class="field"><span class="label">Taxa de setup padrao</span><input class="input" name="taxa_setup_padrao" data-money="true" inputmode="numeric" required></label>
+              <label class="field"><span class="label">Tipo de chave Pix</span><select class="select" name="pix_tipo_chave"><option value="cpf">CPF</option><option value="cnpj">CNPJ</option><option value="email">E-mail</option><option value="telefone">Telefone</option><option value="aleatoria">Aleatoria</option></select></label>
+              <label class="field"><span class="label">Chave Pix</span><input class="input" name="pix_chave" required></label>
+              <label class="field"><span class="label">Nome do recebedor</span><input class="input" name="pix_nome_recebedor" maxlength="25" required></label>
+              <label class="field"><span class="label">Cidade</span><input class="input" name="pix_cidade" maxlength="15" required></label>
+              <label class="field"><span class="label">Descricao padrao</span><input class="input" name="pix_descricao_padrao" maxlength="45" required></label>
+              <div class="actions"><button class="btn primary" type="submit">Salvar configuracoes</button></div>
+            </form>
+          </section>
+        </main>
+      </div>
+    </div>
+    <script type="module" src="/js/settings.js"></script>
+  </body>
+</html>

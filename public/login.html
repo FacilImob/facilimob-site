@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login | Simulador Facil Imob</title>
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
+    <link rel="stylesheet" href="/css/styles.css">
+  </head>
+  <body>
+    <main class="login-page">
+      <section class="login-card">
+        <div class="brand">
+          <img class="brand-logo" src="/assets/logo-facilimob-full-cropped.png" alt="Facil Imob">
+        </div>
+        <h1 class="page-title">Acesso interno</h1>
+        <p class="page-subtitle">Informe seu e-mail de colaborador para receber o codigo de acesso.</p>
+        <div id="status" class="status"></div>
+        <form id="loginForm" class="form-grid">
+          <label class="field">
+            <span class="label">E-mail</span>
+            <input class="input" name="email" type="email" autocomplete="email" required>
+          </label>
+          <button class="btn primary" type="submit">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4 20-7Z"/><path d="M22 2 11 13"/></svg>
+            Enviar codigo
+          </button>
+        </form>
+        <form id="codeForm" class="form-grid" hidden>
+          <label class="field">
+            <span class="label">Codigo de 6 digitos</span>
+            <input class="input code-input" name="token" inputmode="numeric" autocomplete="one-time-code" maxlength="6" required>
+          </label>
+          <label class="field">
+            <span class="label">E-mail</span>
+            <input class="input" name="email" type="email" readonly>
+          </label>
+          <button class="btn primary" type="submit">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>
+            Entrar
+          </button>
+          <button class="btn" type="button" data-resend>Reenviar codigo</button>
+          <button class="btn ghost" type="button" data-change-email>Trocar e-mail</button>
+        </form>
+      </section>
+    </main>
+    <script type="module" src="/js/login.js"></script>
+  </body>
+</html>
