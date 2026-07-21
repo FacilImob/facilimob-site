@@ -458,6 +458,22 @@ button {
   background: var(--surface-muted);
 }
 
+.role-pill {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 8px;
+}
+
+.role-pill.admin {
+  background: var(--brand-orange-soft);
+  border-color: #ffd0a3;
+  color: #b85300;
+}
+
 .drawer {
   background: #fff;
   border-left: 1px solid var(--border);

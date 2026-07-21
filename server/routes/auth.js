@@ -50,12 +50,14 @@ router.post('/verify-code', async (req, res) => {
   req.session.accessToken = data.session.access_token;
   req.session.refreshToken = data.session.refresh_token;
   req.session.userId = data.user.id;
+  req.session.role = normalizeRole(data.user.app_metadata?.role);
 
   res.json({
     user: {
       id: data.user.id,
       email: data.user.email,
-      name: data.user.user_metadata?.name || data.user.email
+      name: displayName(data.user),
+      role: req.session.role
     }
   });
 });
@@ -72,13 +74,22 @@ router.get('/me', requireAuth, (req, res) => {
     user: {
       id: req.user.id,
       email: req.user.email,
-      name: req.user.user_metadata?.name || req.user.email
+      name: displayName(req.user),
+      role: req.user.role
     }
   });
 });
 
 function normalizeEmail(email) {
   return String(email || '').trim().toLowerCase();
+}
+
+function normalizeRole(role) {
+  return role === 'admin' ? 'admin' : 'colaborador';
+}
+
+function displayName(user) {
+  return user.user_metadata?.name || user.app_metadata?.nome || user.email;
 }
 
 export default router;

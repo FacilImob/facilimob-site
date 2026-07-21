@@ -5,6 +5,7 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import authRoutes from './routes/auth.js';
+import adminRoutes from './routes/admin.js';
 import configRoutes from './routes/config.js';
 import simulationsRoutes from './routes/simulations.js';
 import { pageAuth } from './middleware/auth.js';
@@ -38,6 +39,7 @@ app.use('/vendor/jspdf', express.static(path.join(__dirname, '..', 'node_modules
 app.use(express.static(path.join(__dirname, '..', 'public'), { extensions: ['html'] }));
 
 app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
 app.use('/api/config', configRoutes);
 app.use('/api/simulations', simulationsRoutes);
 

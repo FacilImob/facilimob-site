@@ -14,6 +14,9 @@ export async function initLayout(active) {
   try {
     const { user } = await api('/api/auth/me');
     if (userSlot) userSlot.textContent = user.name;
+    document.querySelectorAll('[data-admin-only]').forEach((element) => {
+      element.hidden = user.role !== 'admin';
+    });
   } catch {
     window.location.href = '/login.html';
   }
