@@ -19,11 +19,19 @@ router.post('/request-code', async (req, res) => {
   });
 
   if (error) {
-    if (error.status === 429) {
-      return res.status(429).json({ error: 'Muitas tentativas. Aguarde alguns minutos e tente novamente.' });
+    logSupabaseOtpError(email, error);
+
+    if (isRateLimitError(error)) {
+      return res
+        .status(429)
+        .json({ error: 'Muitos codigos solicitados recentemente. Aguarde alguns minutos e tente novamente.' });
     }
 
-    return res.status(401).json({ error: 'E-mail nao encontrado ou nao autorizado.' });
+    if (isUnauthorizedOtpError(error)) {
+      return res.status(401).json({ error: 'E-mail nao encontrado ou nao autorizado.' });
+    }
+
+    return res.status(500).json({ error: 'Nao foi possivel enviar o e-mail. Verifique a configuracao de e-mail do sistema.' });
   }
 
   res.json({ ok: true });
@@ -90,6 +98,37 @@ function normalizeRole(role) {
 
 function displayName(user) {
   return user.user_metadata?.name || user.app_metadata?.nome || user.email;
+}
+
+function isRateLimitError(error) {
+  const message = String(error.message || '').toLowerCase();
+  const code = String(error.code || '').toLowerCase();
+  return error.status === 429 || code.includes('rate') || message.includes('rate limit');
+}
+
+function isUnauthorizedOtpError(error) {
+  const message = String(error.message || '').toLowerCase();
+  return error.status === 400 || error.status === 401 || error.status === 422 || message.includes('signup');
+}
+
+function logSupabaseOtpError(email, error) {
+  console.error(
+    '[auth:request-code] Supabase signInWithOtp error',
+    JSON.stringify(
+      {
+        email,
+        name: error.name,
+        status: error.status,
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        stack: error.stack
+      },
+      null,
+      2
+    )
+  );
 }
 
 export default router;
