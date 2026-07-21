@@ -15,7 +15,6 @@ form.addEventListener('submit', async (event) => {
   try {
     await requestCode(email);
     showCodeStep(email);
-    toast(status, 'Codigo enviado para o e-mail informado.', 'success');
   } catch (error) {
     toast(status, error.message, 'error');
   }
@@ -58,17 +57,6 @@ document.querySelector('[data-resend]').addEventListener('click', async () => {
   }
 });
 
-document.querySelector('[data-change-email]').addEventListener('click', () => {
-  currentEmail = '';
-  verifying = false;
-  codeForm.hidden = true;
-  form.hidden = false;
-  form.reset();
-  tokenInput.value = '';
-  tokenInput.disabled = false;
-  form.elements.email.focus();
-});
-
 async function requestCode(email) {
   await api('/api/auth/request-code', {
     method: 'POST',
@@ -79,6 +67,8 @@ async function requestCode(email) {
 function showCodeStep(email) {
   currentEmail = email;
   verifying = false;
+  status.classList.remove('show', 'error', 'success');
+  status.textContent = '';
   sentTo.textContent = `Codigo enviado para ${email}`;
   form.hidden = true;
   codeForm.hidden = false;
