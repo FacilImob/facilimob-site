@@ -11,7 +11,7 @@ create table if not exists public.settings (
   atualizado_em timestamptz not null default now()
 );
 
-insert into public.settings (id) values (1) on conflict (id) do nothing;
+insert into public.settings (id) overriding system value values (1) on conflict (id) do nothing;
 
 create table if not exists public.simulations (
   id uuid primary key default gen_random_uuid(),
