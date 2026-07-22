@@ -20,7 +20,7 @@ form.addEventListener('submit', async (event) => {
     });
     form.reset();
     await loadUsers();
-    toast(status, 'Colaborador convidado.', 'success');
+    toast(status, 'Colaborador criado. Um codigo de acesso foi enviado para o e-mail informado.', 'success');
   } catch (error) {
     toast(status, error.message, 'error');
   }

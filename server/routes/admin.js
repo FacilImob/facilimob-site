@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { requireAdmin } from '../middleware/auth.js';
-import { supabaseAdmin } from '../supabaseAdmin.js';
+import { supabaseAdmin, supabaseAnon } from '../supabaseAdmin.js';
 
 const router = Router();
 
@@ -55,6 +55,43 @@ router.post('/users', async (req, res) => {
   if (error) {
     return res.status(400).json({ error: error.message });
   }
+
+  const { error: otpError } = await supabaseAnon.auth.signInWithOtp({
+    email,
+    options: {
+      shouldCreateUser: false
+    }
+  });
+
+  if (otpError) {
+    console.error(
+      '[admin:create-user] Supabase signInWithOtp error',
+      JSON.stringify(
+        {
+          email,
+          createdUserId: data.user?.id,
+          name: otpError.name,
+          status: otpError.status,
+          code: otpError.code,
+          message: otpError.message,
+          details: otpError.details,
+          hint: otpError.hint,
+          stack: otpError.stack
+        },
+        null,
+        2
+      )
+    );
+
+    return res.status(500).json({
+      error: 'Colaborador criado, mas nao foi possivel enviar o codigo de acesso. Tente reenviar pelo login.'
+    });
+  }
+
+  console.info(
+    '[admin:create-user] Colaborador criado e OTP enviado',
+    JSON.stringify({ email, userId: data.user?.id, role })
+  );
 
   res.status(201).json(formatUser(data.user));
 });
