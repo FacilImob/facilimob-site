@@ -109,6 +109,26 @@ router.post('/', requireAuth, async (req, res) => {
   res.status(201).json({ ...simulation, qr_code });
 });
 
+router.delete('/', requireAuth, async (_req, res) => {
+  const { error } = await supabaseAdmin.from('simulations').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  res.json({ ok: true });
+});
+
+router.delete('/:id', requireAuth, async (req, res) => {
+  const { error } = await supabaseAdmin.from('simulations').delete().eq('id', req.params.id);
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  res.json({ ok: true });
+});
+
 function validateSimulation(body) {
   if (!body.cliente_nome || body.cliente_nome.trim().split(/\s+/).length < 2) {
     return 'Informe o nome completo do cliente.';

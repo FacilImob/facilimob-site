@@ -562,6 +562,15 @@ button {
   background: var(--accent-hover);
 }
 
+.btn.danger {
+  border-color: #f2b8b5;
+  color: var(--danger);
+}
+
+.btn.danger:hover {
+  background: #fff1f0;
+}
+
 .btn.ghost {
   background: transparent;
 }
@@ -569,6 +578,10 @@ button {
 .icon-btn {
   min-width: 38px;
   padding: 8px;
+}
+
+.compact-actions {
+  margin-top: 0;
 }
 
 .status {

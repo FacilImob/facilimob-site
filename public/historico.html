@@ -40,6 +40,7 @@
                 <span class="label">Busca por nome ou CPF</span>
                 <input id="search" class="input" placeholder="Digite para filtrar">
               </label>
+              <button class="btn danger" type="button" data-clear-history>Limpar histórico</button>
             </div>
             <div class="table-wrap">
               <table class="table">
@@ -50,6 +51,7 @@
                     <th>Opcao</th>
                     <th>Total</th>
                     <th>Colaborador</th>
+                    <th>Ações</th>
                   </tr>
                 </thead>
                 <tbody id="historyBody"></tbody>
@@ -62,7 +64,12 @@
     <aside id="drawer" class="drawer">
       <div class="drawer-header">
         <h2 class="section-title">Simulacao salva</h2>
-        <button class="btn" type="button" data-close-drawer>Fechar</button>
+        <div class="actions compact-actions">
+          <button class="btn danger icon-btn" type="button" data-delete-active aria-label="Excluir simulação" title="Excluir simulação">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+          </button>
+          <button class="btn" type="button" data-close-drawer>Fechar</button>
+        </div>
       </div>
       <div id="drawerSummary" class="summary print-keep"></div>
       <div class="actions">
