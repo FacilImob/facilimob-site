@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { requireAdmin } from '../middleware/auth.js';
-import { supabaseAdmin, supabaseAnon } from '../supabaseAdmin.js';
+import { supabaseAdmin } from '../supabaseAdmin.js';
 
 const router = Router();
 
@@ -45,38 +45,37 @@ router.post('/users', async (req, res) => {
     return res.status(400).json({ error: 'E-mail invalido.' });
   }
 
-  const { data, error } = await supabaseAdmin.auth.admin.createUser({
-    email,
-    email_confirm: true,
-    user_metadata: { name: nome },
-    app_metadata: { role, nome }
+  const { data, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+    data: {
+      nome,
+      name: nome,
+      role
+    }
   });
 
   if (error) {
     return res.status(400).json({ error: error.message });
   }
 
-  const { error: otpError } = await supabaseAnon.auth.signInWithOtp({
-    email,
-    options: {
-      shouldCreateUser: false
-    }
+  const { data: updatedData, error: metadataError } = await supabaseAdmin.auth.admin.updateUserById(data.user.id, {
+    user_metadata: { nome, name: nome, role },
+    app_metadata: { role, nome }
   });
 
-  if (otpError) {
+  if (metadataError) {
     console.error(
-      '[admin:create-user] Supabase signInWithOtp error',
+      '[admin:invite-user] Supabase updateUserById error',
       JSON.stringify(
         {
           email,
           createdUserId: data.user?.id,
-          name: otpError.name,
-          status: otpError.status,
-          code: otpError.code,
-          message: otpError.message,
-          details: otpError.details,
-          hint: otpError.hint,
-          stack: otpError.stack
+          name: metadataError.name,
+          status: metadataError.status,
+          code: metadataError.code,
+          message: metadataError.message,
+          details: metadataError.details,
+          hint: metadataError.hint,
+          stack: metadataError.stack
         },
         null,
         2
@@ -84,16 +83,16 @@ router.post('/users', async (req, res) => {
     );
 
     return res.status(500).json({
-      error: 'Colaborador criado, mas nao foi possivel enviar o codigo de acesso. Tente reenviar pelo login.'
+      error: 'Colaborador convidado, mas nao foi possivel salvar o papel de acesso.'
     });
   }
 
   console.info(
-    '[admin:create-user] Colaborador criado e OTP enviado',
+    '[admin:invite-user] Colaborador cadastrado e convite enviado',
     JSON.stringify({ email, userId: data.user?.id, role })
   );
 
-  res.status(201).json(formatUser(data.user));
+  res.status(201).json(formatUser(updatedData.user));
 });
 
 router.delete('/users/:id', async (req, res) => {
