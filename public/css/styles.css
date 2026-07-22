@@ -566,6 +566,11 @@ button {
   background: transparent;
 }
 
+.icon-btn {
+  min-width: 38px;
+  padding: 8px;
+}
+
 .status {
   border-radius: 6px;
   display: none;
