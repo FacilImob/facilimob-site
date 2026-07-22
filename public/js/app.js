@@ -43,9 +43,10 @@ updateOptions();
 
 optionButtons.forEach((button) => {
   button.addEventListener('click', () => {
-    selectedOption = button.dataset.option;
-    optionButtons.forEach((item) => item.classList.toggle('selected', item === button));
-    document.querySelector('#selectedTotal').textContent = money.format(getSelectedTotal());
+    selectOption(button.dataset.option);
+    if (simulatedData) {
+      refreshSimulationState();
+    }
   });
 });
 
@@ -57,17 +58,11 @@ form.addEventListener('submit', async (event) => {
     return;
   }
 
-  const payload = Object.fromEntries(new FormData(form));
-  payload.valor_aluguel = Number(fields.valorAluguel.dataset.value || 0);
-  payload.taxa_setup_aplicada = getSetupFee();
-  payload.opcao_escolhida = selectedOption;
+  if (!selectedOption) {
+    selectOption('com_fci');
+  }
 
-  simulatedData = buildSimulationPreview(payload);
-  latestSimulation = null;
-  emptySummary.hidden = true;
-  summary.hidden = false;
-  resultActions.hidden = false;
-  renderSummary(summary, simulatedData, { showPix: false });
+  refreshSimulationState();
   toast(status, 'Simulacao calculada.', 'success');
 });
 
@@ -145,11 +140,34 @@ function updateOptions() {
   document.querySelector('#selectedTotal').textContent = selectedOption ? money.format(getSelectedTotal()) : money.format(0);
 }
 
+function selectOption(option) {
+  selectedOption = option;
+  optionButtons.forEach((button) => {
+    button.classList.toggle('selected', button.dataset.option === selectedOption);
+  });
+  updateOptions();
+}
+
+function refreshSimulationState() {
+  const payload = Object.fromEntries(new FormData(form));
+  payload.valor_aluguel = Number(fields.valorAluguel.dataset.value || 0);
+  payload.taxa_setup_aplicada = getSetupFee();
+  payload.opcao_escolhida = selectedOption;
+
+  simulatedData = buildSimulationPreview(payload);
+  latestSimulation = null;
+  emptySummary.hidden = true;
+  summary.hidden = false;
+  resultActions.hidden = false;
+  renderSummary(summary, simulatedData, { showPix: false });
+  updateOptions();
+}
+
 function getSelectedTotal() {
   const rent = Number(fields.valorAluguel.dataset.value || 0);
   const setup = getSetupFee();
   const rate = selectedOption === 'com_fci' ? Number(settings.taxa_com_fci) : Number(settings.taxa_sem_fci);
-  return rent * (rate / 100) + setup;
+  return roundCurrency(rent * (rate / 100) + setup);
 }
 
 function validateForm() {
@@ -159,7 +177,6 @@ function validateForm() {
   if (String(data.cliente_telefone || '').replace(/\D/g, '').length < 10) return 'Telefone invalido.';
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.cliente_email)) return 'E-mail invalido.';
   if (Number(fields.valorAluguel.dataset.value || 0) <= 0) return 'Informe o valor do aluguel.';
-  if (!selectedOption) return 'Selecione Com FCI ou Sem FCI.';
   return null;
 }
 
