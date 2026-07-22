@@ -27,7 +27,6 @@ export function renderSummary(target, simulation, options = {}) {
       <section class="export-client-grid" aria-label="Dados do cliente">
         <div><span>CPF</span><strong>${formatCpf(simulation.cliente_cpf)}</strong></div>
         <div><span>Telefone</span><strong>${formatPhone(simulation.cliente_telefone)}</strong></div>
-        <div><span>E-mail</span><strong>${escapeHtml(simulation.cliente_email)}</strong></div>
         <div><span>Aluguel mensal</span><strong>${money.format(simulation.valor_aluguel)}</strong></div>
       </section>
 
