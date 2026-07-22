@@ -1,6 +1,6 @@
 import { api, formatCpf, money, toast } from './api.js';
 import { initLayout } from './layout.js';
-import { exportJpeg, exportPdf } from './export.js';
+import { exportJpeg, exportPdf, printTarget } from './export.js';
 import { renderSummary } from './summary.js';
 
 await initLayout('historico');
@@ -10,6 +10,7 @@ const tableBody = document.querySelector('#historyBody');
 const search = document.querySelector('#search');
 const drawer = document.querySelector('#drawer');
 const drawerSummary = document.querySelector('#drawerSummary');
+const settings = await api('/api/config');
 let activeSimulation = null;
 
 await loadHistory();
@@ -30,7 +31,9 @@ document.querySelector('[data-export-pdf]').addEventListener('click', () => {
 document.querySelector('[data-export-jpeg]').addEventListener('click', () => {
   if (activeSimulation) exportJpeg(drawerSummary, `simulacao-${activeSimulation.id}`);
 });
-document.querySelector('[data-print]').addEventListener('click', () => window.print());
+document.querySelector('[data-print]').addEventListener('click', () => {
+  if (activeSimulation) printTarget(drawerSummary);
+});
 
 async function loadHistory() {
   const simulations = await api(`/api/simulations?search=${encodeURIComponent(search.value || '')}`);
@@ -54,7 +57,7 @@ async function loadHistory() {
 async function openSimulation(id) {
   try {
     activeSimulation = await api(`/api/simulations/${id}`);
-    renderSummary(drawerSummary, activeSimulation);
+    renderSummary(drawerSummary, activeSimulation, { settings });
     drawer.classList.add('open');
   } catch (error) {
     toast(status, error.message, 'error');

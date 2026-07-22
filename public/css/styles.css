@@ -341,6 +341,173 @@ button {
   overflow-wrap: anywhere;
 }
 
+.export-sheet {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  display: grid;
+  gap: 18px;
+  padding: 24px;
+}
+
+.export-header {
+  align-items: center;
+  border-bottom: 2px solid #e6ebf1;
+  display: grid;
+  gap: 24px;
+  grid-template-columns: 190px 1fr;
+  padding-bottom: 18px;
+}
+
+.export-logo {
+  display: block;
+  height: auto;
+  max-height: 96px;
+  max-width: 180px;
+  object-fit: contain;
+}
+
+.export-meta {
+  text-align: right;
+}
+
+.export-meta span,
+.export-client-grid span,
+.export-option-card span,
+.export-option-card p {
+  color: var(--muted);
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.export-meta h2 {
+  font-size: 22px;
+  line-height: 1.2;
+  margin: 6px 0;
+}
+
+.export-meta p {
+  color: var(--muted);
+  margin: 0;
+}
+
+.export-client-grid {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: grid;
+  gap: 0;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  overflow: hidden;
+}
+
+.export-client-grid div {
+  border-right: 1px solid var(--border);
+  padding: 14px;
+}
+
+.export-client-grid div:last-child {
+  border-right: 0;
+}
+
+.export-client-grid strong {
+  display: block;
+  font-size: 14px;
+  margin-top: 5px;
+  overflow-wrap: anywhere;
+}
+
+.export-option-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.export-option-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 18px;
+}
+
+.export-option-card + .export-option-card {
+  border-left-color: var(--brand-orange);
+}
+
+.export-option-card h3 {
+  font-size: 18px;
+  margin: 8px 0 14px;
+}
+
+.export-option-card p {
+  margin: 0 0 6px;
+  text-transform: none;
+}
+
+.export-option-card strong {
+  display: block;
+  font-size: 28px;
+  line-height: 1.1;
+}
+
+.export-table {
+  border-collapse: collapse;
+  font-size: 14px;
+  width: 100%;
+}
+
+.export-table th,
+.export-table td {
+  border: 1px solid var(--border);
+  padding: 12px 14px;
+  text-align: left;
+}
+
+.export-table th {
+  background: #f2f5f8;
+  color: #394555;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.export-table td:not(:first-child),
+.export-table th:not(:first-child) {
+  text-align: right;
+}
+
+.export-table tbody tr:last-child td {
+  font-weight: 800;
+}
+
+.export-highlight {
+  background: #f6f9fc;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  text-align: center;
+}
+
+.export-highlight span {
+  color: var(--muted);
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.export-highlight strong {
+  display: block;
+  font-size: 22px;
+}
+
+.print-export-root {
+  display: none;
+}
+
 .pix-area {
   display: grid;
   gap: 14px;
@@ -633,6 +800,9 @@ button {
   .options-grid,
   .pix-area,
   .summary-grid,
+  .export-header,
+  .export-client-grid,
+  .export-option-grid,
   .settings-grid {
     grid-template-columns: 1fr;
   }
@@ -649,6 +819,14 @@ button {
 @media print {
   body {
     background: #fff;
+  }
+
+  body.printing-export > :not(.print-export-root) {
+    display: none !important;
+  }
+
+  body.printing-export .print-export-root {
+    display: block;
   }
 
   .topbar,
@@ -674,8 +852,35 @@ button {
   }
 
   .summary-box,
-  .panel {
+  .panel,
+  .export-sheet {
     border: 0;
     box-shadow: none;
+  }
+
+  .export-sheet {
+    padding: 0;
+  }
+
+  .export-client-grid,
+  .export-option-grid {
+    display: grid;
+  }
+
+  .export-client-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .export-option-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .export-header {
+    grid-template-columns: 180px 1fr;
+  }
+
+  .export-table th {
+    background: #f2f2f2 !important;
+    color: #111 !important;
   }
 }

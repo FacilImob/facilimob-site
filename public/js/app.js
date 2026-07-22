@@ -1,6 +1,6 @@
 import { api, formatCpf, formatPhone, isValidCpf, money, parseCurrency, toast } from './api.js';
 import { initLayout } from './layout.js';
-import { exportJpeg, exportPdf } from './export.js';
+import { exportJpeg, exportPdf, printTarget } from './export.js';
 import { renderSummary } from './summary.js';
 
 await initLayout('simulacao');
@@ -112,7 +112,9 @@ document.querySelector('[data-export-jpeg]').addEventListener('click', () => {
   if (simulatedData) exportJpeg(summary, fileName());
 });
 
-document.querySelector('[data-print]').addEventListener('click', () => window.print());
+document.querySelector('[data-print]').addEventListener('click', () => {
+  if (simulatedData) printTarget(summary);
+});
 document.querySelectorAll('[data-close-pix-modal]').forEach((button) => {
   button.addEventListener('click', closePixModal);
 });
@@ -159,7 +161,7 @@ function refreshSimulationState() {
   emptySummary.hidden = true;
   summary.hidden = false;
   resultActions.hidden = false;
-  renderSummary(summary, simulatedData, { showPix: false });
+  renderSummary(summary, simulatedData, { showPix: false, settings });
   updateOptions();
 }
 
@@ -207,7 +209,7 @@ function roundCurrency(value) {
 }
 
 function openPixModal() {
-  renderSummary(pixModalSummary, latestSimulation, { showPix: true });
+  renderSummary(pixModalSummary, latestSimulation, { showPix: true, settings });
   pixModal.classList.add('open');
   pixModal.setAttribute('aria-hidden', 'false');
 }
