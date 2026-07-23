@@ -199,7 +199,7 @@ router.patch('/:id/option', requireAuth, async (req, res) => {
   }
 
   const { qr_code, ...updatedValues } = result.data;
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('simulations')
     .update({
       opcao_escolhida: updatedValues.opcao_escolhida,
@@ -381,8 +381,8 @@ function validateSimulation(body) {
     return 'Informe o nome completo do cliente.';
   }
 
-  if (!isValidCpf(body.cliente_cpf)) {
-    return 'CPF invalido.';
+  if (!isValidCpfOrCnpj(body.cliente_cpf)) {
+    return 'CPF/CNPJ invalido.';
   }
 
   if (onlyDigits(body.cliente_telefone).length < 10) {
@@ -408,9 +408,14 @@ function validateSimulation(body) {
   return null;
 }
 
-function isValidCpf(value) {
-  const cpf = onlyDigits(value);
+function isValidCpfOrCnpj(value) {
+  const digits = onlyDigits(value);
 
+  if (digits.length === 14) {
+    return isValidCnpj(digits);
+  }
+
+  const cpf = digits;
   if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) {
     return false;
   }
@@ -425,6 +430,24 @@ function isValidCpf(value) {
   };
 
   return calc(10) === Number(cpf[9]) && calc(11) === Number(cpf[10]);
+}
+
+function isValidCnpj(cnpj) {
+  if (cnpj.length !== 14 || /^(\d)\1+$/.test(cnpj)) {
+    return false;
+  }
+
+  const calc = (length) => {
+    const factors = length === 12 ? [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2] : [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+    const total = cnpj
+      .slice(0, length)
+      .split('')
+      .reduce((sum, digit, index) => sum + Number(digit) * factors[index], 0);
+    const remainder = total % 11;
+    return remainder < 2 ? 0 : 11 - remainder;
+  };
+
+  return calc(12) === Number(cnpj[12]) && calc(13) === Number(cnpj[13]);
 }
 
 function onlyDigits(value) {
@@ -457,7 +480,7 @@ async function attachCollaborators(rows) {
       const { data } = await supabaseAdmin.auth.admin.getUserById(row.colaborador_id);
       return {
         ...row,
-        colaborador_nome: data?.user?.user_metadata?.name || data?.user?.email || 'Colaborador',
+        colaborador_nome: data?.user?.user_metadata?.name || data?.user?.app_metadata?.nome || data?.user?.email || 'Colaborador',
         colaborador_email: data?.user?.email || ''
       };
     })

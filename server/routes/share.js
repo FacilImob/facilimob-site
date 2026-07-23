@@ -165,8 +165,8 @@ function parseSharedPayload(encoded) {
     return { error: 'Nome do cliente invalido.' };
   }
 
-  if (payload.cliente_cpf.length !== 11) {
-    return { error: 'CPF invalido.' };
+  if (![11, 14].includes(payload.cliente_cpf.length)) {
+    return { error: 'CPF/CNPJ invalido.' };
   }
 
   if (payload.cliente_telefone.length < 10) {

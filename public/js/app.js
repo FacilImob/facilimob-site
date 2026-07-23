@@ -47,15 +47,21 @@ fields.valorAluguel.addEventListener('input', () => {
   updateOptions();
 });
 
+form.addEventListener('input', () => {
+  if (!latestSimulation) return;
+  latestSimulation = null;
+  latestPixSimulation = null;
+});
+
 updateOptions();
 
 optionButtons.forEach((button) => {
-  button.addEventListener('click', () => {
+  button.addEventListener('click', async () => {
     selectOption(button.dataset.option);
     activePixOption = selectedOption;
     updatePixModeInputs();
     if (simulatedData) {
-      refreshSimulationState();
+      await refreshSelectedSimulation();
     }
     if (pixModal.classList.contains('open')) {
       generatePixPreview();
@@ -64,13 +70,13 @@ optionButtons.forEach((button) => {
 });
 
 [...pixModeInputs, ...pixModalModeInputs].forEach((input) => {
-  input.addEventListener('change', () => {
+  input.addEventListener('change', async () => {
     if (!input.checked) return;
     selectOption(input.value);
     activePixOption = input.value;
     updatePixModeInputs();
     if (simulatedData) {
-      refreshSimulationState();
+      await refreshSelectedSimulation();
     }
     if (pixModal.classList.contains('open')) {
       generatePixPreview();
@@ -92,8 +98,7 @@ form.addEventListener('submit', async (event) => {
 
   activePixOption = selectedOption;
   updatePixModeInputs();
-  refreshSimulationState();
-  toast(status, 'Simulacao calculada.', 'success');
+  await saveSimulation();
 });
 
 document.querySelector('[data-copy-pix]').addEventListener('click', async () => {
@@ -212,6 +217,45 @@ function refreshSimulationState() {
   updateOptions();
 }
 
+async function saveSimulation() {
+  refreshSimulationState();
+
+  try {
+    latestSimulation = await api('/api/simulations', {
+      method: 'POST',
+      body: JSON.stringify(buildPixRequestPayload(activePixOption))
+    });
+    latestPixSimulation = latestSimulation;
+    simulatedData = latestSimulation;
+    renderSummary(summary, simulatedData, { showPix: false, settings, activeOption: activePixOption });
+    toast(status, 'Simulacao salva no historico.', 'success');
+  } catch (error) {
+    latestSimulation = null;
+    latestPixSimulation = null;
+    toast(status, error.message, 'error');
+  }
+}
+
+async function refreshSelectedSimulation() {
+  if (!latestSimulation?.id) {
+    refreshSimulationState();
+    return;
+  }
+
+  try {
+    latestSimulation = await api(`/api/simulations/${latestSimulation.id}/option`, {
+      method: 'PATCH',
+      body: JSON.stringify({ opcao_escolhida: activePixOption })
+    });
+    latestPixSimulation = latestSimulation;
+    simulatedData = latestSimulation;
+    renderSummary(summary, simulatedData, { showPix: false, settings, activeOption: activePixOption });
+    updateOptions();
+  } catch (error) {
+    toast(status, error.message, 'error');
+  }
+}
+
 function getSelectedTotal() {
   const rent = Number(fields.valorAluguel.dataset.value || 0);
   const setup = getSetupFee();
@@ -222,7 +266,7 @@ function getSelectedTotal() {
 function validateForm() {
   const data = Object.fromEntries(new FormData(form));
   if (!data.cliente_nome || data.cliente_nome.trim().split(/\s+/).length < 2) return 'Informe o nome completo.';
-  if (!isValidCpf(data.cliente_cpf)) return 'CPF invalido.';
+  if (!isValidCpf(data.cliente_cpf)) return 'CPF/CNPJ invalido.';
   if (String(data.cliente_telefone || '').replace(/\D/g, '').length < 10) return 'Telefone invalido.';
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.cliente_email)) return 'E-mail invalido.';
   if (Number(fields.valorAluguel.dataset.value || 0) <= 0) return 'Informe o valor do aluguel.';

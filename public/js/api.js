@@ -32,9 +32,17 @@ export function parseCurrency(value) {
 }
 
 export function formatCpf(value) {
-  return String(value || '')
-    .replace(/\D/g, '')
-    .slice(0, 11)
+  const digits = String(value || '').replace(/\D/g, '').slice(0, 14);
+
+  if (digits.length > 11) {
+    return digits
+      .replace(/^(\d{2})(\d)/, '$1.$2')
+      .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+      .replace(/\.(\d{3})(\d)/, '.$1/$2')
+      .replace(/(\d{4})(\d)/, '$1-$2');
+  }
+
+  return digits
     .replace(/(\d{3})(\d)/, '$1.$2')
     .replace(/(\d{3})(\d)/, '$1.$2')
     .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
@@ -49,7 +57,13 @@ export function formatPhone(value) {
 }
 
 export function isValidCpf(value) {
-  const cpf = String(value || '').replace(/\D/g, '');
+  const digits = String(value || '').replace(/\D/g, '');
+
+  if (digits.length === 14) {
+    return isValidCnpj(digits);
+  }
+
+  const cpf = digits;
   if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
 
   const calc = (factor) => {
@@ -60,6 +74,22 @@ export function isValidCpf(value) {
   };
 
   return calc(10) === Number(cpf[9]) && calc(11) === Number(cpf[10]);
+}
+
+function isValidCnpj(cnpj) {
+  if (cnpj.length !== 14 || /^(\d)\1+$/.test(cnpj)) return false;
+
+  const calc = (length) => {
+    const factors = length === 12 ? [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2] : [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+    const total = cnpj
+      .slice(0, length)
+      .split('')
+      .reduce((sum, digit, index) => sum + Number(digit) * factors[index], 0);
+    const remainder = total % 11;
+    return remainder < 2 ? 0 : 11 - remainder;
+  };
+
+  return calc(12) === Number(cnpj[12]) && calc(13) === Number(cnpj[13]);
 }
 
 export function toast(element, message, type = 'success') {

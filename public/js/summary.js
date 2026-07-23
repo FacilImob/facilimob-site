@@ -18,7 +18,7 @@ export function renderSummary(target, simulation, options = {}) {
       </header>
 
       <section class="export-client-grid" aria-label="Dados do cliente">
-        <div><span>CPF</span><strong>${formatCpf(simulation.cliente_cpf)}</strong></div>
+        <div><span>CPF/CNPJ</span><strong>${formatCpf(simulation.cliente_cpf)}</strong></div>
         <div><span>Telefone</span><strong>${formatPhone(simulation.cliente_telefone)}</strong></div>
         <div><span>Aluguel mensal</span><strong>${money.format(simulation.valor_aluguel)}</strong></div>
       </section>
