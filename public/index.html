@@ -90,8 +90,17 @@
                 <p class="muted">O resumo completo aparece apos simular.</p>
               </div>
               <div id="summary" class="summary" hidden></div>
+              <div id="pixModePanel" class="summary-box pix-mode-panel" hidden>
+                <span class="label">Modalidade para Pix</span>
+                <div class="segmented" role="radiogroup" aria-label="Modalidade para Pix">
+                  <label><input type="radio" name="pix_option" value="com_fci"> Com FCI</label>
+                  <label><input type="radio" name="pix_option" value="sem_fci"> Sem FCI</label>
+                </div>
+                <p class="muted">O QR Code e o Pix serao gerados somente para a modalidade selecionada.</p>
+              </div>
               <div id="resultActions" class="actions" hidden>
                 <button class="btn primary" type="button" data-generate-pix>Gerar Pix</button>
+                <button class="btn" type="button" data-share>Compartilhar</button>
                 <button class="btn icon-btn" type="button" data-export-pdf aria-label="Salvar PDF" title="Salvar PDF">
                   <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M9 15h6"/><path d="M9 18h3"/></svg>
                 </button>
@@ -114,6 +123,13 @@
         <div class="modal-header">
           <h2 id="pixModalTitle" class="section-title">Pix gerado</h2>
           <button class="btn" type="button" data-close-pix-modal>Fechar</button>
+        </div>
+        <div class="summary-box pix-mode-panel">
+          <span class="label">Pix ativo</span>
+          <div class="segmented" role="radiogroup" aria-label="Modalidade ativa do Pix">
+            <label><input type="radio" name="pix_modal_option" value="com_fci"> Com FCI</label>
+            <label><input type="radio" name="pix_modal_option" value="sem_fci"> Sem FCI</label>
+          </div>
         </div>
         <div id="pixModalSummary" class="summary"></div>
         <div class="actions">

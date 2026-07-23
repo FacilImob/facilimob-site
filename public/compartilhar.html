@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Simulacao compartilhada | Simulador Facil Imob</title>
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
+    <link rel="stylesheet" href="/css/styles.css">
+  </head>
+  <body class="share-page">
+    <main class="share-shell">
+      <header class="share-header">
+        <img src="/assets/logo-facilimob-horizontal-cropped.png" alt="Facil Imob">
+        <a class="btn" href="https://garantias.imobiliariainglaterra.com.br/">Voltar ao site</a>
+      </header>
+
+      <section class="share-card">
+        <div id="shareStatus" class="status"></div>
+        <div id="shareSummary" class="summary"></div>
+
+        <div id="shareControls" class="summary-box pix-mode-panel" hidden>
+          <span class="label">Escolha a modalidade para pagamento</span>
+          <div class="segmented" role="radiogroup" aria-label="Modalidade para pagamento">
+            <label><input type="radio" name="share_pix_option" value="com_fci"> Com FCI</label>
+            <label><input type="radio" name="share_pix_option" value="sem_fci"> Sem FCI</label>
+          </div>
+        </div>
+
+        <div id="sharePix" class="summary"></div>
+      </section>
+    </main>
+
+    <script type="module" src="/js/share.js"></script>
+  </body>
+</html>

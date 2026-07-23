@@ -30,13 +30,24 @@ create table if not exists public.simulations (
   pix_payload text not null
 );
 
+create table if not exists public.shared_simulations (
+  id uuid primary key default gen_random_uuid(),
+  share_hash text not null unique,
+  criado_em timestamptz not null default now(),
+  expira_em timestamptz not null,
+  criado_por uuid references auth.users(id),
+  dados jsonb not null
+);
+
 alter table public.settings enable row level security;
 alter table public.simulations enable row level security;
+alter table public.shared_simulations enable row level security;
 
 drop policy if exists "authenticated read settings" on public.settings;
 drop policy if exists "authenticated update settings" on public.settings;
 drop policy if exists "authenticated read simulations" on public.simulations;
 drop policy if exists "authenticated insert simulations" on public.simulations;
+drop policy if exists "authenticated read shared simulations" on public.shared_simulations;
 
 create policy "authenticated read settings" on public.settings
   for select using (auth.role() = 'authenticated');
@@ -47,3 +58,9 @@ create policy "authenticated read simulations" on public.simulations
   for select using (auth.role() = 'authenticated');
 create policy "authenticated insert simulations" on public.simulations
   for insert with check (auth.role() = 'authenticated');
+
+create policy "authenticated read shared simulations" on public.shared_simulations
+  for select using (auth.role() = 'authenticated');
+
+create index if not exists shared_simulations_share_hash_idx on public.shared_simulations (share_hash);
+create index if not exists shared_simulations_expira_em_idx on public.shared_simulations (expira_em);

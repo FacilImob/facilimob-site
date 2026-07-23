@@ -3,24 +3,17 @@ import { money, formatCpf, formatPhone } from './api.js';
 export function renderSummary(target, simulation, options = {}) {
   const showPix = options.showPix !== false;
   const comparison = buildComparison(simulation, options.settings || {});
+  const activeOption = options.activeOption || simulation.opcao_escolhida || '';
   const generatedAt = simulation.criado_em ? new Date(simulation.criado_em) : new Date();
-  const difference = comparison.comFci.parcela_mensal - comparison.semFci.parcela_mensal;
-  const differenceBlock =
-    Math.abs(difference) < 0.01
-      ? ''
-      : `<div class="export-highlight">
-          <span>${difference < 0 ? 'Economia mensal com FCI' : 'Sem FCI é mais barato neste caso'}</span>
-          <strong>${difference < 0 ? money.format(Math.abs(difference)) : money.format(Math.abs(difference))}</strong>
-        </div>`;
 
   target.innerHTML = `
     <article class="export-sheet">
       <header class="export-header">
         <img class="export-logo" src="/assets/logo-facilimob.png" alt="Facil Imob">
         <div class="export-meta">
-          <span>Simulação de garantia</span>
+          <span>Simulacao de garantia</span>
           <h2>${escapeHtml(simulation.cliente_nome)}</h2>
-          <p>${generatedAt.toLocaleDateString('pt-BR')} - Responsável: ${escapeHtml(simulation.colaborador_nome || '')}</p>
+          <p>${generatedAt.toLocaleDateString('pt-BR')} - Responsavel: ${escapeHtml(simulation.colaborador_nome || '')}</p>
         </div>
       </header>
 
@@ -31,8 +24,8 @@ export function renderSummary(target, simulation, options = {}) {
       </section>
 
       <section class="export-option-grid" aria-label="Opcoes simuladas">
-        ${renderOptionCard('Com FCI', comparison.comFci)}
-        ${renderOptionCard('Sem FCI', comparison.semFci)}
+        ${renderOptionCard('Com FCI', 'com_fci', comparison.comFci, activeOption)}
+        ${renderOptionCard('Sem FCI', 'sem_fci', comparison.semFci, activeOption)}
       </section>
 
       <section class="export-table-wrap" aria-label="Tabela comparativa">
@@ -61,15 +54,13 @@ export function renderSummary(target, simulation, options = {}) {
               <td>${money.format(comparison.semFci.taxa_setup_aplicada)}</td>
             </tr>
             <tr>
-              <td>Total do 1º pagamento</td>
+              <td>Total do 1o pagamento</td>
               <td>${money.format(comparison.comFci.total_primeiro_pagamento)}</td>
               <td>${money.format(comparison.semFci.total_primeiro_pagamento)}</td>
             </tr>
           </tbody>
         </table>
       </section>
-
-      ${differenceBlock}
     </article>
 
     ${
@@ -88,13 +79,15 @@ export function renderSummary(target, simulation, options = {}) {
   `;
 }
 
-function renderOptionCard(title, option) {
+function renderOptionCard(title, optionKey, option, activeOption) {
+  const isActive = optionKey === activeOption;
   return `
-    <div class="export-option-card">
+    <div class="export-option-card ${isActive ? 'pix-active' : ''}">
       <span>${title}</span>
       <h3>${formatRate(option.taxa_aplicada)}</h3>
       <p>Parcela mensal</p>
       <strong>${money.format(option.parcela_mensal)}</strong>
+      ${isActive ? '<small>Pix ativo nesta modalidade</small>' : ''}
     </div>
   `;
 }

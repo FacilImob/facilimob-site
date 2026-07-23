@@ -26,6 +26,7 @@ const { rows } = await client.query(`
   select
     to_regclass('public.settings') as settings_table,
     to_regclass('public.simulations') as simulations_table,
+    to_regclass('public.shared_simulations') as shared_simulations_table,
     exists(select 1 from public.settings where id = 1) as default_settings_exists
 `);
 

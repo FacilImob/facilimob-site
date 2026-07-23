@@ -23,7 +23,12 @@
       </aside>
       <div class="content">
         <header class="topbar">
-          <div class="brand"><button class="btn ghost mobile-menu" type="button" data-menu aria-label="Abrir menu"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg></button><img class="brand-logo horizontal" src="/assets/logo-facilimob-horizontal-cropped.png" alt="Facil Imob"></div>
+          <div class="brand">
+            <button class="btn ghost mobile-menu" type="button" data-menu aria-label="Abrir menu">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
+            </button>
+            <img class="brand-logo horizontal" src="/assets/logo-facilimob-horizontal-cropped.png" alt="Facil Imob">
+          </div>
           <div class="user-actions"><span data-user></span><button class="btn" type="button" data-logout>Sair</button></div>
         </header>
         <main class="page">
@@ -35,23 +40,51 @@
           </div>
           <div id="status" class="status"></div>
           <section class="panel">
-            <div class="table-tools">
+            <div class="table-tools history-tools">
               <label class="field">
                 <span class="label">Busca por nome ou CPF</span>
                 <input id="search" class="input" placeholder="Digite para filtrar">
               </label>
-              <button class="btn danger" type="button" data-clear-history>Limpar histórico</button>
+              <label class="field">
+                <span class="label">Data inicial</span>
+                <input id="dateFrom" class="input" type="date">
+              </label>
+              <label class="field">
+                <span class="label">Data final</span>
+                <input id="dateTo" class="input" type="date">
+              </label>
+              <label class="field">
+                <span class="label">Modalidade</span>
+                <select id="optionFilter" class="select">
+                  <option value="">Todas</option>
+                  <option value="com_fci">Com FCI</option>
+                  <option value="sem_fci">Sem FCI</option>
+                </select>
+              </label>
+              <label class="field">
+                <span class="label">Aluguel min.</span>
+                <input id="rentMin" class="input" type="number" min="0" step="0.01">
+              </label>
+              <label class="field">
+                <span class="label">Aluguel max.</span>
+                <input id="rentMax" class="input" type="number" min="0" step="0.01">
+              </label>
+              <button class="btn" type="button" data-select-all>Selecionar Todos</button>
+              <button class="btn danger" type="button" data-delete-selected>Excluir Selecionados</button>
+              <button class="btn danger" type="button" data-clear-history>Limpar historico</button>
             </div>
             <div class="table-wrap">
               <table class="table">
                 <thead>
                   <tr>
+                    <th><span class="sr-only">Selecionar</span></th>
                     <th>Cliente</th>
                     <th>Data</th>
                     <th>Opcao</th>
+                    <th>Aluguel</th>
                     <th>Total</th>
                     <th>Colaborador</th>
-                    <th>Ações</th>
+                    <th>Acoes</th>
                   </tr>
                 </thead>
                 <tbody id="historyBody"></tbody>
@@ -61,11 +94,12 @@
         </main>
       </div>
     </div>
+
     <aside id="drawer" class="drawer">
       <div class="drawer-header">
         <h2 class="section-title">Simulacao salva</h2>
         <div class="actions compact-actions">
-          <button class="btn danger icon-btn" type="button" data-delete-active aria-label="Excluir simulação" title="Excluir simulação">
+          <button class="btn danger icon-btn" type="button" data-delete-active aria-label="Excluir simulacao" title="Excluir simulacao">
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
           </button>
           <button class="btn" type="button" data-close-drawer>Fechar</button>
@@ -85,6 +119,22 @@
         </button>
       </div>
     </aside>
+
+    <div id="bulkDeleteModal" class="modal" aria-hidden="true">
+      <div class="modal-backdrop" data-close-bulk-modal></div>
+      <section class="modal-panel small-modal" role="dialog" aria-modal="true" aria-labelledby="bulkDeleteTitle">
+        <div class="modal-header">
+          <h2 id="bulkDeleteTitle" class="section-title">Excluir selecionados</h2>
+          <button class="btn" type="button" data-close-bulk-modal>Fechar</button>
+        </div>
+        <p id="bulkDeleteMessage" class="muted"></p>
+        <div class="actions">
+          <button class="btn danger" type="button" data-confirm-bulk-delete>Excluir</button>
+          <button class="btn" type="button" data-close-bulk-modal>Cancelar</button>
+        </div>
+      </section>
+    </div>
+
     <script src="/vendor/html2canvas/html2canvas.min.js"></script>
     <script src="/vendor/jspdf/jspdf.umd.min.js"></script>
     <script type="module" src="/js/history.js"></script>

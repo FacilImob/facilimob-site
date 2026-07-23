@@ -7,6 +7,7 @@ import session from 'express-session';
 import authRoutes from './routes/auth.js';
 import adminRoutes from './routes/admin.js';
 import configRoutes from './routes/config.js';
+import shareRoutes from './routes/share.js';
 import simulationsRoutes from './routes/simulations.js';
 import { pageAuth } from './middleware/auth.js';
 
@@ -41,6 +42,7 @@ app.use(express.static(path.join(__dirname, '..', 'public'), { extensions: ['htm
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/config', configRoutes);
+app.use('/api/share', shareRoutes);
 app.use('/api/simulations', simulationsRoutes);
 
 app.get('/', (_req, res) => {
