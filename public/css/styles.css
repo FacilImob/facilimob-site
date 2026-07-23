@@ -661,9 +661,9 @@ button {
 
 .history-tools {
   align-items: end;
-  column-gap: 14px;
+  column-gap: 10px;
   display: grid;
-  grid-template-columns: minmax(240px, 1.5fr) repeat(2, minmax(146px, 1fr)) minmax(150px, 1fr) repeat(2, minmax(130px, 1fr)) repeat(3, 40px);
+  grid-template-columns: minmax(180px, 1.5fr) repeat(2, minmax(120px, 1fr)) minmax(132px, 1fr) repeat(2, minmax(104px, 1fr)) repeat(3, 38px);
   row-gap: 12px;
 }
 
@@ -671,10 +671,22 @@ button {
   min-width: 0;
 }
 
+.history-tools .label {
+  font-size: 12px;
+}
+
+.history-tools .input,
+.history-tools .select {
+  font-size: 13px;
+  min-height: 40px;
+  padding-left: 9px;
+  padding-right: 9px;
+}
+
 .history-tools .icon-btn {
   align-self: end;
   height: 40px;
-  min-width: 40px;
+  min-width: 38px;
 }
 
 .sr-only {
