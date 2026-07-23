@@ -16,6 +16,9 @@ const pixModalSummary = document.querySelector('#pixModalSummary');
 const pixModePanel = document.querySelector('#pixModePanel');
 const pixModeInputs = document.querySelectorAll('[name="pix_option"]');
 const pixModalModeInputs = document.querySelectorAll('[name="pix_modal_option"]');
+const shareModal = document.querySelector('#shareModal');
+const shareLinkInput = document.querySelector('#shareLink');
+const nativeShareButton = document.querySelector('[data-native-share]');
 
 let settings = await api('/api/config');
 let selectedOption = null;
@@ -151,6 +154,11 @@ document.querySelector('[data-share]').addEventListener('click', shareSimulation
 document.querySelectorAll('[data-close-pix-modal]').forEach((button) => {
   button.addEventListener('click', closePixModal);
 });
+document.querySelectorAll('[data-close-share-modal]').forEach((button) => {
+  button.addEventListener('click', closeShareModal);
+});
+document.querySelector('[data-copy-share-link]').addEventListener('click', copyShareLink);
+nativeShareButton.addEventListener('click', nativeShare);
 
 document.querySelector('[data-new]').addEventListener('click', () => {
   form.reset();
@@ -166,6 +174,7 @@ document.querySelector('[data-new]').addEventListener('click', () => {
   resultActions.hidden = true;
   emptySummary.hidden = false;
   closePixModal();
+  closeShareModal();
   updateOptions();
 });
 
@@ -282,6 +291,7 @@ async function shareSimulation() {
     taxa_setup_aplicada: String(simulatedData.taxa_setup_aplicada),
     taxa_com_fci: String(settings.taxa_com_fci),
     taxa_sem_fci: String(settings.taxa_sem_fci),
+    opcao_escolhida: activePixOption || selectedOption || 'com_fci',
     colaborador_nome: document.querySelector('[data-user]')?.textContent || ''
   });
 
@@ -290,8 +300,8 @@ async function shareSimulation() {
       method: 'POST',
       body: JSON.stringify({ encoded: params.toString() })
     });
-    await navigator.clipboard.writeText(result.url);
-    toast(status, 'Link de compartilhamento copiado.', 'success');
+    openShareModal(result.url);
+    toast(status, 'Link de compartilhamento gerado.', 'success');
   } catch (error) {
     toast(status, error.message, 'error');
   }
@@ -321,4 +331,40 @@ function openPixModal() {
 function closePixModal() {
   pixModal.classList.remove('open');
   pixModal.setAttribute('aria-hidden', 'true');
+}
+
+function openShareModal(url) {
+  shareLinkInput.value = url;
+  nativeShareButton.hidden = !navigator.share;
+  shareModal.classList.add('open');
+  shareModal.setAttribute('aria-hidden', 'false');
+  shareLinkInput.focus();
+  shareLinkInput.select();
+}
+
+function closeShareModal() {
+  shareModal.classList.remove('open');
+  shareModal.setAttribute('aria-hidden', 'true');
+}
+
+async function copyShareLink() {
+  if (!shareLinkInput.value) return;
+  await navigator.clipboard.writeText(shareLinkInput.value);
+  toast(status, 'Link copiado.', 'success');
+}
+
+async function nativeShare() {
+  if (!shareLinkInput.value || !navigator.share) return;
+
+  try {
+    await navigator.share({
+      title: 'Simulacao Facil Imob',
+      text: 'Confira sua simulacao de garantia de aluguel.',
+      url: shareLinkInput.value
+    });
+  } catch (error) {
+    if (error.name !== 'AbortError') {
+      toast(status, 'Nao foi possivel abrir o compartilhamento.', 'error');
+    }
+  }
 }

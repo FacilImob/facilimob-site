@@ -662,7 +662,13 @@ button {
 .history-tools {
   align-items: end;
   display: grid;
-  grid-template-columns: minmax(180px, 1.4fr) repeat(5, minmax(130px, 1fr)) auto auto auto;
+  grid-template-columns: minmax(220px, 1.5fr) repeat(5, minmax(112px, 1fr)) repeat(3, 40px);
+}
+
+.history-tools .icon-btn {
+  align-self: end;
+  height: 40px;
+  min-width: 40px;
 }
 
 .sr-only {
@@ -814,8 +820,27 @@ button {
 .drawer-header {
   align-items: center;
   display: flex;
+  gap: 12px;
   justify-content: space-between;
   margin-bottom: 16px;
+}
+
+.share-link-field {
+  margin-top: 14px;
+}
+
+.share-link-input {
+  font-size: 13px;
+}
+
+.share-link-input:read-only {
+  background: var(--surface-muted);
+}
+
+@media (max-width: 1180px) {
+  .history-tools {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 .settings-grid {
@@ -887,6 +912,10 @@ button {
 
   .history-tools {
     grid-template-columns: 1fr;
+  }
+
+  .history-tools .icon-btn {
+    width: 100%;
   }
 
   .grid-main,

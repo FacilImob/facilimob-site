@@ -69,9 +69,15 @@
                 <span class="label">Aluguel max.</span>
                 <input id="rentMax" class="input" type="number" min="0" step="0.01">
               </label>
-              <button class="btn" type="button" data-select-all>Selecionar Todos</button>
-              <button class="btn danger" type="button" data-delete-selected>Excluir Selecionados</button>
-              <button class="btn danger" type="button" data-clear-history>Limpar historico</button>
+              <button class="btn icon-btn" type="button" data-select-all aria-label="Selecionar todos" title="Selecionar todos">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+              </button>
+              <button class="btn danger icon-btn" type="button" data-delete-selected aria-label="Excluir selecionados" title="Excluir selecionados">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+              </button>
+              <button class="btn danger icon-btn" type="button" data-clear-history aria-label="Limpar historico" title="Limpar historico">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M18 6l-.7 10.2"/><path d="M6 6l1 14a2 2 0 0 0 2 2h6"/></svg>
+              </button>
             </div>
             <div class="table-wrap">
               <table class="table">
@@ -99,15 +105,30 @@
       <div class="drawer-header">
         <h2 class="section-title">Simulacao salva</h2>
         <div class="actions compact-actions">
+          <button class="btn icon-btn" type="button" data-share-active aria-label="Compartilhar simulacao" title="Compartilhar simulacao">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5l6.8-4"/><path d="M8.6 13.5l6.8 4"/></svg>
+          </button>
           <button class="btn danger icon-btn" type="button" data-delete-active aria-label="Excluir simulacao" title="Excluir simulacao">
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
           </button>
-          <button class="btn" type="button" data-close-drawer>Fechar</button>
+          <button class="btn icon-btn" type="button" data-close-drawer aria-label="Fechar" title="Fechar">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
         </div>
+      </div>
+      <div id="historyPixModePanel" class="summary-box pix-mode-panel" hidden>
+        <span class="label">Modalidade ativa</span>
+        <div class="segmented" role="radiogroup" aria-label="Modalidade ativa">
+          <label><input type="radio" name="history_pix_option" value="com_fci"> Com FCI</label>
+          <label><input type="radio" name="history_pix_option" value="sem_fci"> Sem FCI</label>
+        </div>
+        <p class="muted">O resumo e o Pix abaixo acompanham a modalidade selecionada.</p>
       </div>
       <div id="drawerSummary" class="summary print-keep"></div>
       <div class="actions">
-        <button class="btn" type="button" data-copy-pix>Copiar Pix</button>
+        <button class="btn icon-btn" type="button" data-copy-pix aria-label="Copiar Pix" title="Copiar Pix">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+        </button>
         <button class="btn icon-btn" type="button" data-export-pdf aria-label="Salvar PDF" title="Salvar PDF">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M9 15h6"/><path d="M9 18h3"/></svg>
         </button>
@@ -131,6 +152,27 @@
         <div class="actions">
           <button class="btn danger" type="button" data-confirm-bulk-delete>Excluir</button>
           <button class="btn" type="button" data-close-bulk-modal>Cancelar</button>
+        </div>
+      </section>
+    </div>
+
+    <div id="shareModal" class="modal" aria-hidden="true">
+      <div class="modal-backdrop" data-close-share-modal></div>
+      <section class="modal-panel small-modal" role="dialog" aria-modal="true" aria-labelledby="shareModalTitle">
+        <div class="modal-header">
+          <h2 id="shareModalTitle" class="section-title">Compartilhar simulacao</h2>
+          <button class="btn icon-btn" type="button" data-close-share-modal aria-label="Fechar" title="Fechar">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
+        </div>
+        <p class="muted">Envie este link para o cliente visualizar a simulacao e escolher a modalidade do Pix.</p>
+        <label class="field share-link-field">
+          <span class="label">Link da simulacao</span>
+          <input id="shareLink" class="input share-link-input" readonly>
+        </label>
+        <div class="actions">
+          <button class="btn primary" type="button" data-copy-share-link>Copiar link</button>
+          <button class="btn" type="button" data-native-share>Compartilhar</button>
         </div>
       </section>
     </div>

@@ -100,7 +100,9 @@
               </div>
               <div id="resultActions" class="actions" hidden>
                 <button class="btn primary" type="button" data-generate-pix>Gerar Pix</button>
-                <button class="btn" type="button" data-share>Compartilhar</button>
+                <button class="btn icon-btn" type="button" data-share aria-label="Compartilhar simulacao" title="Compartilhar simulacao">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5l6.8-4"/><path d="M8.6 13.5l6.8 4"/></svg>
+                </button>
                 <button class="btn icon-btn" type="button" data-export-pdf aria-label="Salvar PDF" title="Salvar PDF">
                   <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M9 15h6"/><path d="M9 18h3"/></svg>
                 </button>
@@ -134,6 +136,26 @@
         <div id="pixModalSummary" class="summary"></div>
         <div class="actions">
           <button class="btn primary" type="button" data-copy-pix>Copiar Pix</button>
+        </div>
+      </section>
+    </div>
+    <div id="shareModal" class="modal" aria-hidden="true">
+      <div class="modal-backdrop" data-close-share-modal></div>
+      <section class="modal-panel small-modal" role="dialog" aria-modal="true" aria-labelledby="shareModalTitle">
+        <div class="modal-header">
+          <h2 id="shareModalTitle" class="section-title">Compartilhar simulacao</h2>
+          <button class="btn icon-btn" type="button" data-close-share-modal aria-label="Fechar" title="Fechar">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
+        </div>
+        <p class="muted">Envie este link para o cliente visualizar a simulacao e escolher a modalidade do Pix.</p>
+        <label class="field share-link-field">
+          <span class="label">Link da simulacao</span>
+          <input id="shareLink" class="input share-link-input" readonly>
+        </label>
+        <div class="actions">
+          <button class="btn primary" type="button" data-copy-share-link>Copiar link</button>
+          <button class="btn" type="button" data-native-share>Compartilhar</button>
         </div>
       </section>
     </div>

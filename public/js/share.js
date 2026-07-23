@@ -29,10 +29,11 @@ document.querySelectorAll('[name="share_pix_option"]').forEach((input) => {
 async function loadSharedSimulation() {
   try {
     const data = await api(`/api/share/${encodeURIComponent(hash)}`);
+    selectedOption = data.simulation.opcao_escolhida || 'com_fci';
     sharedSimulation = {
       ...data.simulation,
       opcao_escolhida: selectedOption,
-      taxa_aplicada: data.settings.taxa_com_fci
+      taxa_aplicada: selectedOption === 'com_fci' ? data.settings.taxa_com_fci : data.settings.taxa_sem_fci
     };
     settings = data.settings;
     controls.hidden = false;

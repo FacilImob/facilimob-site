@@ -144,6 +144,7 @@ function parseSharedPayload(encoded) {
     taxa_setup_aplicada: Number(params.get('taxa_setup_aplicada') || 0),
     taxa_com_fci: Number(params.get('taxa_com_fci') || 0),
     taxa_sem_fci: Number(params.get('taxa_sem_fci') || 0),
+    opcao_escolhida: String(params.get('opcao_escolhida') || 'com_fci').trim(),
     colaborador_nome: String(params.get('colaborador_nome') || '').trim()
   };
 
@@ -169,6 +170,10 @@ function parseSharedPayload(encoded) {
 
   if (!Number.isFinite(payload.taxa_com_fci) || !Number.isFinite(payload.taxa_sem_fci)) {
     return { error: 'Taxas invalidas.' };
+  }
+
+  if (!['com_fci', 'sem_fci'].includes(payload.opcao_escolhida)) {
+    return { error: 'Modalidade invalida.' };
   }
 
   return { payload };
