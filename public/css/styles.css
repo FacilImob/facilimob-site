@@ -661,8 +661,14 @@ button {
 
 .history-tools {
   align-items: end;
+  column-gap: 14px;
   display: grid;
-  grid-template-columns: minmax(220px, 1.5fr) repeat(5, minmax(112px, 1fr)) repeat(3, 40px);
+  grid-template-columns: minmax(240px, 1.5fr) repeat(2, minmax(146px, 1fr)) minmax(150px, 1fr) repeat(2, minmax(130px, 1fr)) repeat(3, 40px);
+  row-gap: 12px;
+}
+
+.history-tools .field {
+  min-width: 0;
 }
 
 .history-tools .icon-btn {
