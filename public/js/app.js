@@ -295,6 +295,10 @@ async function shareSimulation() {
     colaborador_nome: document.querySelector('[data-user]')?.textContent || ''
   });
 
+  if (latestSimulation?.id) {
+    params.set('simulation_id', latestSimulation.id);
+  }
+
   try {
     const result = await api('/api/share', {
       method: 'POST',

@@ -152,6 +152,74 @@ router.post('/pix-preview', requireAuth, async (req, res) => {
   res.json(result.data);
 });
 
+router.patch('/:id/option', requireAuth, async (req, res) => {
+  const opcao = String(req.body.opcao_escolhida || '').trim();
+
+  if (!isUuid(req.params.id)) {
+    return res.status(400).json({ error: 'Simulacao invalida.' });
+  }
+
+  if (!['com_fci', 'sem_fci'].includes(opcao)) {
+    return res.status(400).json({ error: 'Modalidade invalida.' });
+  }
+
+  const supabase = userClient(req.accessToken);
+  const { data: current, error: currentError } = await supabase
+    .from('simulations')
+    .select('*')
+    .eq('id', req.params.id)
+    .single();
+
+  if (currentError || !current) {
+    return res.status(404).json({ error: 'Simulacao nao encontrada.' });
+  }
+
+  const { data: settings, error: settingsError } = await supabase.from('settings').select('*').eq('id', 1).single();
+
+  if (settingsError) {
+    return res.status(500).json({ error: settingsError.message });
+  }
+
+  const result = await buildPixSimulation(
+    {
+      cliente_nome: current.cliente_nome,
+      cliente_cpf: current.cliente_cpf,
+      cliente_telefone: current.cliente_telefone,
+      cliente_email: current.cliente_email,
+      valor_aluguel: current.valor_aluguel,
+      taxa_setup_aplicada: current.taxa_setup_aplicada,
+      opcao_escolhida: opcao
+    },
+    settings,
+    req.user
+  );
+
+  if (result.error) {
+    return res.status(result.status || 400).json({ error: result.error });
+  }
+
+  const { qr_code, ...updatedValues } = result.data;
+  const { data, error } = await supabase
+    .from('simulations')
+    .update({
+      opcao_escolhida: updatedValues.opcao_escolhida,
+      taxa_aplicada: updatedValues.taxa_aplicada,
+      parcela_mensal: updatedValues.parcela_mensal,
+      total_primeiro_pagamento: updatedValues.total_primeiro_pagamento,
+      pix_payload: updatedValues.pix_payload
+    })
+    .eq('id', req.params.id)
+    .select('*')
+    .single();
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  const [simulation] = await attachCollaborators([data]);
+  res.json({ ...simulation, qr_code });
+});
+
 router.delete('/', requireAuth, async (req, res) => {
   const { data: rows } = await supabaseAdmin.from('simulations').select('id');
   const { error } = await supabaseAdmin.from('simulations').delete().neq('id', '00000000-0000-0000-0000-000000000000');

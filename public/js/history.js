@@ -185,17 +185,13 @@ async function setHistoryOption(option) {
 
 async function refreshHistoryPix() {
   try {
-    const preview = await api('/api/simulations/pix-preview', {
-      method: 'POST',
-      body: JSON.stringify(buildHistoryPixPayload(activeHistoryOption))
+    const preview = await api(`/api/simulations/${activeSimulation.id}/option`, {
+      method: 'PATCH',
+      body: JSON.stringify({ opcao_escolhida: activeHistoryOption })
     });
-    renderActiveSimulation({
-      ...activeSimulation,
-      ...preview,
-      id: activeSimulation.id,
-      criado_em: activeSimulation.criado_em,
-      colaborador_nome: activeSimulation.colaborador_nome
-    });
+    activeSimulation = preview;
+    renderActiveSimulation(preview);
+    await loadHistory();
   } catch (error) {
     toast(status, error.message, 'error');
   }
@@ -215,18 +211,6 @@ function updateHistoryOptionInputs() {
   });
 }
 
-function buildHistoryPixPayload(option) {
-  return {
-    cliente_nome: activeSimulation.cliente_nome,
-    cliente_cpf: activeSimulation.cliente_cpf,
-    cliente_telefone: activeSimulation.cliente_telefone,
-    cliente_email: activeSimulation.cliente_email,
-    valor_aluguel: activeSimulation.valor_aluguel,
-    taxa_setup_aplicada: activeSimulation.taxa_setup_aplicada,
-    opcao_escolhida: option
-  };
-}
-
 async function shareActiveSimulation() {
   if (!activeSimulation) {
     toast(status, 'Abra uma simulacao antes de compartilhar.', 'error');
@@ -242,6 +226,7 @@ async function shareActiveSimulation() {
     taxa_com_fci: String(settings.taxa_com_fci),
     taxa_sem_fci: String(settings.taxa_sem_fci),
     opcao_escolhida: activeHistoryOption || activeSimulation.opcao_escolhida || 'com_fci',
+    simulation_id: activeSimulation.id,
     colaborador_nome: activeSimulation.colaborador_nome || ''
   });
 

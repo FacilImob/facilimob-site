@@ -59,7 +59,7 @@ router.get('/:hash', async (req, res) => {
   }
 
   res.json({
-    simulation: shared.data.dados,
+    simulation: publicSimulation(shared.data.dados),
     expires_at: shared.data.expira_em,
     settings: publicSettings(settings, shared.data.dados)
   });
@@ -103,6 +103,18 @@ router.post('/:hash/pix', async (req, res) => {
   }
 
   const { cliente_email, ...data } = result.data;
+  const sharedUpdate = await updateSharedSelection(shared.data.share_hash, shared.data.dados, opcao);
+
+  if (sharedUpdate.error) {
+    return res.status(500).json({ error: sharedUpdate.error });
+  }
+
+  const updateResult = await updateLinkedSimulation(shared.data.dados.simulation_id, data);
+
+  if (updateResult.error) {
+    return res.status(500).json({ error: updateResult.error });
+  }
+
   res.json(data);
 });
 
@@ -145,6 +157,7 @@ function parseSharedPayload(encoded) {
     taxa_com_fci: Number(params.get('taxa_com_fci') || 0),
     taxa_sem_fci: Number(params.get('taxa_sem_fci') || 0),
     opcao_escolhida: String(params.get('opcao_escolhida') || 'com_fci').trim(),
+    simulation_id: String(params.get('simulation_id') || '').trim(),
     colaborador_nome: String(params.get('colaborador_nome') || '').trim()
   };
 
@@ -176,7 +189,61 @@ function parseSharedPayload(encoded) {
     return { error: 'Modalidade invalida.' };
   }
 
+  if (payload.simulation_id && !isUuid(payload.simulation_id)) {
+    return { error: 'Simulacao vinculada invalida.' };
+  }
+
   return { payload };
+}
+
+async function updateSharedSelection(hash, payload, option) {
+  const { error } = await supabaseAdmin
+    .from('shared_simulations')
+    .update({
+      dados: {
+        ...payload,
+        opcao_escolhida: option
+      }
+    })
+    .eq('share_hash', hash);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  return { ok: true };
+}
+
+async function updateLinkedSimulation(simulationId, data) {
+  if (!simulationId) {
+    return { ok: true };
+  }
+
+  const { error } = await supabaseAdmin
+    .from('simulations')
+    .update({
+      opcao_escolhida: data.opcao_escolhida,
+      taxa_aplicada: data.taxa_aplicada,
+      parcela_mensal: data.parcela_mensal,
+      total_primeiro_pagamento: data.total_primeiro_pagamento,
+      pix_payload: data.pix_payload
+    })
+    .eq('id', simulationId);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  return { ok: true };
+}
+
+function isUuid(value) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || ''));
+}
+
+function publicSimulation(payload = {}) {
+  const { simulation_id, ...data } = payload;
+  return data;
 }
 
 function createShareHash(encoded, userId) {
