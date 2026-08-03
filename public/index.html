@@ -3,164 +3,300 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Simulacao | Simulador Facil Imob</title>
-    <link rel="icon" type="image/png" href="/assets/favicon.png">
-    <link rel="stylesheet" href="/css/styles.css">
+    <meta name="description" content="Garantia locatícia digital para alugar sem fiador, sem caução e com processo simples para inquilinos e proprietários.">
+    <meta property="og:title" content="FacilImob | Garantia de Aluguel">
+    <meta property="og:description" content="Alugue sem fiador, sem caução e com aprovação rápida.">
+    <meta property="og:image" content="https://www.facilimob.com/assets/facilimob-hero-woman.png">
+    <title>FacilImob | Garantia de Aluguel</title>
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <link rel="stylesheet" href="css/site.css">
   </head>
   <body>
-    <div class="sidebar-backdrop"></div>
-    <div class="app-shell">
-      <aside class="sidebar">
-        <div class="sidebar-logo">
-          <img src="/assets/logo-facilimob-full-cropped.png" alt="Facil Imob">
+    <header class="site-header">
+      <a class="site-logo" href="#inicio" aria-label="FacilImob - início">
+        <img src="assets/logo-facilimob-horizontal-cropped.png" alt="FacilImob Garantia de Aluguel">
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="siteNav" data-menu-toggle>
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav id="siteNav" class="site-nav" data-site-nav>
+        <a href="#como-funciona">Como funciona</a>
+        <a href="#inquilino">Para inquilinos</a>
+        <a href="#proprietario">Para proprietários</a>
+        <a href="#duvidas">Dúvidas</a>
+        <a class="nav-cta" href="#contato">Quero alugar sem fiador</a>
+      </nav>
+    </header>
+
+    <main>
+      <section id="inicio" class="hero" data-animate>
+        <div class="hero-content" data-animate>
+          <p class="eyebrow">Garantia locatícia digital</p>
+          <h1>Alugue sem fiador, sem caução e com aprovação rápida.</h1>
+          <p class="hero-copy">A Garantia FacilImob simplifica a locação para quem quer alugar com menos burocracia e oferece mais segurança para quem tem um imóvel.</p>
+          <div class="hero-actions">
+            <a class="button primary" href="#contato">Quero alugar sem fiador</a>
+            <a class="button secondary" href="https://wa.me/5543936181186?text=Ol%C3%A1%2C%20quero%20saber%20mais%20sobre%20a%20Garantia%20FacilImob%20para%20alugar%20sem%20fiador." target="_blank" rel="noopener">Chamar no WhatsApp</a>
+          </div>
+          <div class="trust-row" aria-label="Principais benefícios">
+            <span>Processo on-line</span>
+            <span>Sem fiador</span>
+            <span>Para inquilinos e proprietários</span>
+          </div>
         </div>
-        <nav>
-          <a class="side-link" data-nav="simulacao" href="/index.html">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 16V9"/><path d="M12 16V7"/><path d="M16 16v-4"/></svg>
-            Simulacao
-          </a>
-          <a class="side-link" data-nav="historico" href="/historico.html">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v6h6"/><path d="M12 7v5l3 2"/></svg>
-            Historico
-          </a>
-          <a class="side-link" data-nav="settings" href="/settings.html">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1A2 2 0 1 1 4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1A2 2 0 1 1 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1A2 2 0 1 1 19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.5 1h.1a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>
-            Configuracoes
-          </a>
-          <a class="side-link" data-nav="admin" href="/admin.html" data-admin-only hidden>
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/></svg>
-            Administracao
-          </a>
-        </nav>
-      </aside>
-      <div class="content">
-        <header class="topbar">
-          <div class="brand">
-            <button class="btn ghost mobile-menu" type="button" data-menu aria-label="Abrir menu">
-              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
-            </button>
-            <img class="brand-logo horizontal" src="/assets/logo-facilimob-horizontal-cropped.png" alt="Facil Imob">
+        <div class="hero-visual" aria-label="Pessoa segurando chaves de imóvel" data-animate>
+          <img src="assets/facilimob-hero-woman.png" alt="Mulher sorrindo com chaves e tablet em ambiente residencial">
+          <div class="hero-card">
+            <strong>Menos burocracia</strong>
+            <span>Mais agilidade para seguir com a locação.</span>
           </div>
-          <div class="user-actions">
-            <span data-user></span>
-            <button class="btn" type="button" data-logout>Sair</button>
-          </div>
-        </header>
-        <main class="page">
-          <div class="page-header">
+        </div>
+      </section>
+
+      <section class="intro-section split-section" aria-labelledby="garantia-title" data-animate>
+        <div>
+          <p class="eyebrow">O que é</p>
+          <h2 id="garantia-title">Uma garantia de aluguel simples de entender.</h2>
+        </div>
+        <div class="split-copy">
+          <p>A FacilImob substitui alternativas tradicionais como fiador e caução, ajudando o inquilino a avançar com mais facilidade e dando ao proprietário uma camada extra de segurança no processo de locação.</p>
+          <div class="signal-card">
+            <img src="assets/favicon.png" alt="">
             <div>
-              <h1 class="page-title">Simulacao</h1>
-              <p class="page-subtitle">Calcule a garantia, escolha a opcao e confira o total.</p>
+              <strong>Garantia analisada</strong>
+              <span>Mais clareza antes de seguir com o contrato.</span>
             </div>
           </div>
-          <div id="status" class="status"></div>
-          <div class="grid-main">
-            <section class="panel">
-              <h2 class="section-title">Dados do cliente</h2>
-              <form id="simulationForm" class="form-grid">
-                <label class="field"><span class="label">Nome completo</span><input class="input" name="cliente_nome" required></label>
-                <label class="field"><span class="label">CPF/CNPJ</span><input class="input" name="cliente_cpf" inputmode="numeric" placeholder="000.000.000-00 ou 00.000.000/0000-00" required></label>
-                <label class="field"><span class="label">Telefone</span><input class="input" name="cliente_telefone" inputmode="numeric" placeholder="(00) 00000-0000" required></label>
-                <label class="field"><span class="label">E-mail</span><input class="input" name="cliente_email" type="email" required></label>
-                <label class="field"><span class="label">Valor mensal do aluguel</span><input class="input" name="valor_aluguel" inputmode="numeric" required></label>
-                <button class="btn primary" type="submit">
-                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
-                  Simular
-                </button>
-              </form>
-            </section>
-            <section class="panel print-keep">
-              <h2 class="section-title">Opcoes</h2>
-              <div class="options-grid">
-                <button class="option-card" type="button" data-option="com_fci">
-                  <h3>Com FCI</h3>
-                  <p class="value" data-value="com_fci">R$ 0,00</p>
-                  <p class="muted">Produto cobre taxas e condominio</p>
-                </button>
-                <button class="option-card" type="button" data-option="sem_fci">
-                  <h3>Sem FCI</h3>
-                  <p class="value" data-value="sem_fci">R$ 0,00</p>
-                  <p class="muted">Produto cobre taxas e condominio</p>
-                </button>
-              </div>
-              <div class="summary-box">
-                <div class="summary-item"><span>Total selecionado</span><strong id="selectedTotal">R$ 0,00</strong></div>
-              </div>
-              <div id="emptySummary" class="summary-box">
-                <p class="muted">O resumo completo aparece apos simular.</p>
-              </div>
-              <div id="summary" class="summary" hidden></div>
-              <div id="pixModePanel" class="summary-box pix-mode-panel" hidden>
-                <span class="label">Modalidade para Pix</span>
-                <div class="segmented" role="radiogroup" aria-label="Modalidade para Pix">
-                  <label><input type="radio" name="pix_option" value="com_fci"> Com FCI</label>
-                  <label><input type="radio" name="pix_option" value="sem_fci"> Sem FCI</label>
-                </div>
-                <p class="muted">O QR Code e o Pix serao gerados somente para a modalidade selecionada.</p>
-              </div>
-              <div id="resultActions" class="actions" hidden>
-                <button class="btn primary" type="button" data-generate-pix>Gerar Pix</button>
-                <button class="btn icon-btn" type="button" data-share aria-label="Compartilhar simulacao" title="Compartilhar simulacao">
-                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5l6.8-4"/><path d="M8.6 13.5l6.8 4"/></svg>
-                </button>
-                <button class="btn icon-btn" type="button" data-export-pdf aria-label="Salvar PDF" title="Salvar PDF">
-                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M9 15h6"/><path d="M9 18h3"/></svg>
-                </button>
-                <button class="btn icon-btn" type="button" data-export-jpeg aria-label="Salvar JPEG" title="Salvar JPEG">
-                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>
-                </button>
-                <button class="btn icon-btn" type="button" data-print aria-label="Imprimir" title="Imprimir">
-                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
-                </button>
-                <button class="btn" type="button" data-new>Nova simulacao</button>
-              </div>
-            </section>
-          </div>
-        </main>
-      </div>
-    </div>
-    <div id="pixModal" class="modal" aria-hidden="true">
-      <div class="modal-backdrop" data-close-pix-modal></div>
-      <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="pixModalTitle">
-        <div class="modal-header">
-          <h2 id="pixModalTitle" class="section-title">Pix gerado</h2>
-          <button class="btn" type="button" data-close-pix-modal>Fechar</button>
-        </div>
-        <div class="summary-box pix-mode-panel">
-          <span class="label">Pix ativo</span>
-          <div class="segmented" role="radiogroup" aria-label="Modalidade ativa do Pix">
-            <label><input type="radio" name="pix_modal_option" value="com_fci"> Com FCI</label>
-            <label><input type="radio" name="pix_modal_option" value="sem_fci"> Sem FCI</label>
-          </div>
-        </div>
-        <div id="pixModalSummary" class="summary"></div>
-        <div class="actions">
-          <button class="btn primary" type="button" data-copy-pix>Copiar Pix</button>
         </div>
       </section>
-    </div>
-    <div id="shareModal" class="modal" aria-hidden="true">
-      <div class="modal-backdrop" data-close-share-modal></div>
-      <section class="modal-panel small-modal" role="dialog" aria-modal="true" aria-labelledby="shareModalTitle">
-        <div class="modal-header">
-          <h2 id="shareModalTitle" class="section-title">Compartilhar simulacao</h2>
-          <button class="btn icon-btn" type="button" data-close-share-modal aria-label="Fechar" title="Fechar">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-          </button>
+
+      <section class="features-section" aria-labelledby="features-title">
+        <div class="section-heading" data-animate>
+          <p class="eyebrow">Por que facilita</p>
+          <h2 id="features-title">Menos travas para uma locação mais fluida.</h2>
         </div>
-        <p class="muted">Envie este link para o cliente visualizar a simulacao e escolher a modalidade do Pix.</p>
-        <label class="field share-link-field">
-          <span class="label">Link da simulacao</span>
-          <input id="shareLink" class="input share-link-input" readonly>
-        </label>
-        <div class="actions">
-          <button class="btn primary" type="button" data-copy-share-link>Copiar link</button>
-          <button class="btn" type="button" data-native-share>Compartilhar</button>
+        <div class="feature-grid">
+          <article class="feature-card" data-animate>
+            <img class="feature-icon" src="assets/icon-seguranca.png" alt="">
+            <h3>Segurança no processo</h3>
+            <p>Mais confiança para organizar a garantia antes do fechamento do aluguel.</p>
+          </article>
+          <article class="feature-card" data-animate>
+            <img class="feature-icon" src="assets/icon-sem-fiador.png" alt="">
+            <h3>Sem fiador ou caução</h3>
+            <p>Uma alternativa prática para reduzir exigências tradicionais da locação.</p>
+          </article>
+          <article class="feature-card" data-animate>
+            <img class="feature-icon" src="assets/icon-atendimento.png" alt="">
+            <h3>Atendimento direto</h3>
+            <p>Orientação simples para entender os próximos passos e seguir sem ruído.</p>
+          </article>
         </div>
       </section>
-    </div>
-    <script src="/vendor/html2canvas/html2canvas.min.js"></script>
-    <script src="/vendor/jspdf/jspdf.umd.min.js"></script>
-    <script type="module" src="/js/app.js"></script>
+
+      <section class="stats-band" aria-label="Resultados da Garantia FacilImob" data-animate>
+        <div>
+          <strong><span data-count="100">0</span>%</strong>
+          <span>processo orientado de forma digital</span>
+        </div>
+        <div>
+          <strong><span data-count="0">0</span></strong>
+          <span>fiador exigido na proposta da garantia</span>
+        </div>
+        <div>
+          <strong><span data-count="3">0</span> passos</strong>
+          <span>para enviar dados, analisar e receber retorno</span>
+        </div>
+      </section>
+
+      <section id="como-funciona" class="steps-section" aria-labelledby="steps-title" data-animate>
+        <div class="section-heading">
+          <p class="eyebrow">Como funciona</p>
+          <h2 id="steps-title">Quatro passos para sair da dúvida.</h2>
+        </div>
+        <div class="steps-grid">
+          <article data-animate>
+            <span>1</span>
+            <h3>Envie seus dados</h3>
+            <p>Preencha o formulário com suas informações de contato e perfil.</p>
+          </article>
+          <article data-animate>
+            <span>2</span>
+            <h3>Fazemos a análise</h3>
+            <p>Avaliamos a solicitação para orientar o melhor caminho.</p>
+          </article>
+          <article data-animate>
+            <span>3</span>
+            <h3>Receba o retorno</h3>
+            <p>Você recebe as próximas orientações com clareza e objetividade.</p>
+          </article>
+          <article data-animate>
+            <span>4</span>
+            <h3>Siga com a locação</h3>
+            <p>Com a garantia encaminhada, o aluguel pode avançar com menos entraves.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="audience-band" id="inquilino" aria-labelledby="audience-title">
+        <span id="proprietario" class="anchor-offset" aria-hidden="true"></span>
+        <div class="section-heading" data-animate>
+          <p class="eyebrow">Para cada etapa da locação</p>
+          <h2 id="audience-title">Informação clara para quem aluga e para quem tem imóvel.</h2>
+        </div>
+        <div class="audience-grid">
+          <article class="audience-panel" data-animate>
+            <span class="audience-kicker">Para inquilinos</span>
+            <h3>Alugue com menos exigências.</h3>
+            <p>Uma alternativa simples para avançar na locação sem depender de fiador ou caução.</p>
+            <div class="benefit-list">
+              <div>
+                <strong>Sem fiador</strong>
+                <span>Menos etapas para apresentar uma garantia aceita.</span>
+              </div>
+              <div>
+                <strong>Sem caução</strong>
+                <span>Evite imobilizar um valor alto logo no início da locação.</span>
+              </div>
+              <div>
+                <strong>Processo direto</strong>
+                <span>Atendimento objetivo para entender o que falta e seguir adiante.</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="audience-panel featured" data-animate>
+            <span class="audience-kicker">Para proprietários</span>
+            <h3>Mais confiança para fechar o aluguel.</h3>
+            <p>A garantia ajuda a organizar a análise e traz mais segurança para seguir com a locação.</p>
+            <div class="benefit-list">
+              <div>
+                <strong>Análise do perfil</strong>
+                <span>Mais clareza antes de avançar com o contrato.</span>
+              </div>
+              <div>
+                <strong>Locação mais ágil</strong>
+                <span>Menos dependência de soluções tradicionais e demoradas.</span>
+              </div>
+              <div>
+                <strong>Processo organizado</strong>
+                <span>Informações centralizadas para uma decisão mais tranquila.</span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="testimonials-section" aria-labelledby="testimonials-title">
+        <div class="section-heading" data-animate>
+          <p class="eyebrow">Experiência de atendimento</p>
+          <h2 id="testimonials-title">O que clientes esperam de uma garantia simples.</h2>
+        </div>
+        <div class="testimonial-grid">
+          <article data-animate>
+            <p>"Eu precisava entender rápido se conseguiria alugar sem fiador. O retorno claro fez diferença."</p>
+            <strong>Inquilina</strong>
+          </article>
+          <article data-animate>
+            <p>"Para o proprietário, o mais importante é ter segurança sem transformar a locação em um processo lento."</p>
+            <strong>Proprietário</strong>
+          </article>
+          <article data-animate>
+            <p>"A explicação simples ajuda a tomar decisão sem ficar perdido entre caução, fiador e outras exigências."</p>
+            <strong>Cliente FacilImob</strong>
+          </article>
+        </div>
+      </section>
+
+      <section id="duvidas" class="faq-section" aria-labelledby="faq-title" data-animate>
+        <div class="section-heading">
+          <p class="eyebrow">Dúvidas frequentes</p>
+          <h2 id="faq-title">Respostas diretas para decidir com tranquilidade.</h2>
+        </div>
+        <div class="faq-grid">
+          <details open>
+            <summary>Preciso de fiador?</summary>
+            <p>Não. A proposta da Garantia FacilImob é substituir a necessidade de fiador no processo de locação.</p>
+          </details>
+          <details>
+            <summary>Preciso pagar caução?</summary>
+            <p>Em geral, a garantia evita a exigência de caução antecipada. Cada caso passa por análise e orientação.</p>
+          </details>
+          <details>
+            <summary>Quem pode solicitar?</summary>
+            <p>Inquilinos que desejam alugar sem fiador e proprietários que querem entender melhor a segurança da garantia.</p>
+          </details>
+          <details>
+            <summary>Quanto tempo demora?</summary>
+            <p>O atendimento é feito para ser rápido e objetivo. Depois do envio dos dados, você recebe as próximas orientações.</p>
+          </details>
+          <details>
+            <summary>A garantia também ajuda o proprietário?</summary>
+            <p>Sim. Ela ajuda a organizar a locação com mais segurança, menos incerteza e mais clareza sobre o processo.</p>
+          </details>
+          <details>
+            <summary>Como falo com a FacilImob?</summary>
+            <p>Você pode preencher o formulário ou chamar diretamente pelo WhatsApp.</p>
+          </details>
+        </div>
+      </section>
+
+      <section class="final-cta" data-animate>
+        <div>
+          <p class="eyebrow">Próximo passo</p>
+          <h2>Quer entender se a garantia serve para o seu aluguel?</h2>
+        </div>
+        <a class="button primary" href="#contato">Quero alugar sem fiador</a>
+      </section>
+
+      <section id="contato" class="contact-section" aria-labelledby="contact-title" data-animate>
+        <div class="contact-copy" data-animate>
+          <p class="eyebrow">Fale conosco</p>
+          <h2 id="contact-title">Quer alugar sem fiador?</h2>
+          <p>Preencha seus dados e fale com a equipe FacilImob diretamente pelo WhatsApp.</p>
+          <div class="contact-methods">
+            <a href="mailto:contato@facilimob.com">contato@facilimob.com</a>
+            <a href="https://wa.me/5543936181186?text=Ol%C3%A1%2C%20quero%20saber%20mais%20sobre%20a%20Garantia%20FacilImob%20para%20alugar%20sem%20fiador." target="_blank" rel="noopener">(43) 93618-1186</a>
+          </div>
+        </div>
+        <form class="lead-form" id="leadForm" data-whatsapp-form data-animate>
+          <label>
+            <span>Nome completo</span>
+            <input name="name" autocomplete="name" required>
+          </label>
+          <label>
+            <span>Telefone/WhatsApp</span>
+            <input name="phone" autocomplete="tel" inputmode="tel" required>
+          </label>
+          <label>
+            <span>E-mail</span>
+            <input name="email" type="email" autocomplete="email" required>
+          </label>
+          <label class="consent full">
+            <input name="consent" type="checkbox" required>
+            <span>Concordo em enviar meus dados para receber contato da FacilImob sobre garantia de aluguel e aceito a <a href="politica-de-privacidade.html">Política de Privacidade</a> e os <a href="termos-de-uso.html">Termos de Uso</a>.</span>
+          </label>
+          <button class="button primary full" type="submit">Falar com um consultor</button>
+          <p class="form-status" data-form-status role="status" aria-live="polite"></p>
+        </form>
+      </section>
+    </main>
+
+    <a class="whatsapp-float" href="https://wa.me/5543936181186?text=Ol%C3%A1%2C%20quero%20saber%20mais%20sobre%20a%20Garantia%20FacilImob%20para%20alugar%20sem%20fiador." target="_blank" rel="noopener" aria-label="Chamar FacilImob no WhatsApp">
+      <span>WhatsApp</span>
+    </a>
+
+    <footer class="site-footer">
+      <img src="assets/logo-facilimob-horizontal-cropped.png" alt="FacilImob">
+      <p>FacilImob Garantia de Aluguel. Informação clara para uma locação mais simples.</p>
+      <nav class="footer-links" aria-label="Links legais">
+        <a href="politica-de-privacidade.html">Política de Privacidade</a>
+        <a href="termos-de-uso.html">Termos de Uso</a>
+      </nav>
+    </footer>
+
+    <script src="js/site.js"></script>
   </body>
 </html>

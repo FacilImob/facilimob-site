@@ -38,7 +38,7 @@ async function verifyCode() {
       method: 'POST',
       body: JSON.stringify({ email: currentEmail, token })
     });
-    window.location.href = '/index.html';
+    window.location.href = '/simulador.html';
   } catch (error) {
     toast(status, error.message, 'error');
     tokenInput.value = '';

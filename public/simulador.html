@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Simulacao | Simulador Facil Imob</title>
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
+    <link rel="stylesheet" href="/css/styles.css">
+  </head>
+  <body>
+    <div class="sidebar-backdrop"></div>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="sidebar-logo">
+          <img src="/assets/logo-facilimob-full-cropped.png" alt="Facil Imob">
+        </div>
+        <nav>
+          <a class="side-link" data-nav="simulacao" href="/simulador.html">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 16V9"/><path d="M12 16V7"/><path d="M16 16v-4"/></svg>
+            Simulacao
+          </a>
+          <a class="side-link" data-nav="historico" href="/historico.html">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v6h6"/><path d="M12 7v5l3 2"/></svg>
+            Historico
+          </a>
+          <a class="side-link" data-nav="settings" href="/settings.html">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1A2 2 0 1 1 4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1A2 2 0 1 1 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1A2 2 0 1 1 19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.5 1h.1a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>
+            Configuracoes
+          </a>
+          <a class="side-link" data-nav="admin" href="/admin.html" data-admin-only hidden>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/></svg>
+            Administracao
+          </a>
+        </nav>
+      </aside>
+      <div class="content">
+        <header class="topbar">
+          <div class="brand">
+            <button class="btn ghost mobile-menu" type="button" data-menu aria-label="Abrir menu">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
+            </button>
+            <img class="brand-logo horizontal" src="/assets/logo-facilimob-horizontal-cropped.png" alt="Facil Imob">
+          </div>
+          <div class="user-actions">
+            <span data-user></span>
+            <button class="btn" type="button" data-logout>Sair</button>
+          </div>
+        </header>
+        <main class="page">
+          <div class="page-header">
+            <div>
+              <h1 class="page-title">Simulacao</h1>
+              <p class="page-subtitle">Calcule a garantia, escolha a opcao e confira o total.</p>
+            </div>
+          </div>
+          <div id="status" class="status"></div>
+          <div class="grid-main">
+            <section class="panel">
+              <h2 class="section-title">Dados do cliente</h2>
+              <form id="simulationForm" class="form-grid">
+                <label class="field"><span class="label">Nome completo</span><input class="input" name="cliente_nome" required></label>
+                <label class="field"><span class="label">CPF/CNPJ</span><input class="input" name="cliente_cpf" inputmode="numeric" placeholder="000.000.000-00 ou 00.000.000/0000-00" required></label>
+                <label class="field"><span class="label">Telefone</span><input class="input" name="cliente_telefone" inputmode="numeric" placeholder="(00) 00000-0000" required></label>
+                <label class="field"><span class="label">E-mail</span><input class="input" name="cliente_email" type="email" required></label>
+                <label class="field"><span class="label">Valor mensal do aluguel</span><input class="input" name="valor_aluguel" inputmode="numeric" required></label>
+                <button class="btn primary" type="submit">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+                  Simular
+                </button>
+              </form>
+            </section>
+            <section class="panel print-keep">
+              <h2 class="section-title">Opcoes</h2>
+              <div class="options-grid">
+                <button class="option-card" type="button" data-option="com_fci">
+                  <h3>Com FCI</h3>
+                  <p class="value" data-value="com_fci">R$ 0,00</p>
+                  <p class="muted">Produto cobre taxas e condominio</p>
+                </button>
+                <button class="option-card" type="button" data-option="sem_fci">
+                  <h3>Sem FCI</h3>
+                  <p class="value" data-value="sem_fci">R$ 0,00</p>
+                  <p class="muted">Produto cobre taxas e condominio</p>
+                </button>
+              </div>
+              <div class="summary-box">
+                <div class="summary-item"><span>Total selecionado</span><strong id="selectedTotal">R$ 0,00</strong></div>
+              </div>
+              <div id="emptySummary" class="summary-box">
+                <p class="muted">O resumo completo aparece apos simular.</p>
+              </div>
+              <div id="summary" class="summary" hidden></div>
+              <div id="pixModePanel" class="summary-box pix-mode-panel" hidden>
+                <span class="label">Modalidade para Pix</span>
+                <div class="segmented" role="radiogroup" aria-label="Modalidade para Pix">
+                  <label><input type="radio" name="pix_option" value="com_fci"> Com FCI</label>
+                  <label><input type="radio" name="pix_option" value="sem_fci"> Sem FCI</label>
+                </div>
+                <p class="muted">O QR Code e o Pix serao gerados somente para a modalidade selecionada.</p>
+              </div>
+              <div id="resultActions" class="actions" hidden>
+                <button class="btn primary" type="button" data-generate-pix>Gerar Pix</button>
+                <button class="btn icon-btn" type="button" data-share aria-label="Compartilhar simulacao" title="Compartilhar simulacao">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5l6.8-4"/><path d="M8.6 13.5l6.8 4"/></svg>
+                </button>
+                <button class="btn icon-btn" type="button" data-export-pdf aria-label="Salvar PDF" title="Salvar PDF">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M9 15h6"/><path d="M9 18h3"/></svg>
+                </button>
+                <button class="btn icon-btn" type="button" data-export-jpeg aria-label="Salvar JPEG" title="Salvar JPEG">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>
+                </button>
+                <button class="btn icon-btn" type="button" data-print aria-label="Imprimir" title="Imprimir">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
+                </button>
+                <button class="btn" type="button" data-new>Nova simulacao</button>
+              </div>
+            </section>
+          </div>
+        </main>
+      </div>
+    </div>
+    <div id="pixModal" class="modal" aria-hidden="true">
+      <div class="modal-backdrop" data-close-pix-modal></div>
+      <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="pixModalTitle">
+        <div class="modal-header">
+          <h2 id="pixModalTitle" class="section-title">Pix gerado</h2>
+          <button class="btn" type="button" data-close-pix-modal>Fechar</button>
+        </div>
+        <div class="summary-box pix-mode-panel">
+          <span class="label">Pix ativo</span>
+          <div class="segmented" role="radiogroup" aria-label="Modalidade ativa do Pix">
+            <label><input type="radio" name="pix_modal_option" value="com_fci"> Com FCI</label>
+            <label><input type="radio" name="pix_modal_option" value="sem_fci"> Sem FCI</label>
+          </div>
+        </div>
+        <div id="pixModalSummary" class="summary"></div>
+        <div class="actions">
+          <button class="btn primary" type="button" data-copy-pix>Copiar Pix</button>
+        </div>
+      </section>
+    </div>
+    <div id="shareModal" class="modal" aria-hidden="true">
+      <div class="modal-backdrop" data-close-share-modal></div>
+      <section class="modal-panel small-modal" role="dialog" aria-modal="true" aria-labelledby="shareModalTitle">
+        <div class="modal-header">
+          <h2 id="shareModalTitle" class="section-title">Compartilhar simulacao</h2>
+          <button class="btn icon-btn" type="button" data-close-share-modal aria-label="Fechar" title="Fechar">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
+        </div>
+        <p class="muted">Envie este link para o cliente visualizar a simulacao e escolher a modalidade do Pix.</p>
+        <label class="field share-link-field">
+          <span class="label">Link da simulacao</span>
+          <input id="shareLink" class="input share-link-input" readonly>
+        </label>
+        <div class="actions">
+          <button class="btn primary" type="button" data-copy-share-link>Copiar link</button>
+          <button class="btn" type="button" data-native-share>Compartilhar</button>
+        </div>
+      </section>
+    </div>
+    <script src="/vendor/html2canvas/html2canvas.min.js"></script>
+    <script src="/vendor/jspdf/jspdf.umd.min.js"></script>
+    <script type="module" src="/js/app.js"></script>
+  </body>
+</html>

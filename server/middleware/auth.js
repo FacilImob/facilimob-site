@@ -1,9 +1,8 @@
 import { supabaseAnon } from '../supabaseAdmin.js';
 
 const protectedPages = new Set([
-  '/',
-  '/index',
-  '/index.html',
+  '/simulador',
+  '/simulador.html',
   '/historico',
   '/historico.html',
   '/settings',
@@ -54,7 +53,7 @@ export async function requireAdmin(req, res, next) {
       return next();
     }
 
-    return wantsHtml(req) ? res.redirect('/index.html') : res.status(403).json({ error: 'Acesso restrito a administradores.' });
+    return wantsHtml(req) ? res.redirect('/simulador.html') : res.status(403).json({ error: 'Acesso restrito a administradores.' });
   });
 }
 
