@@ -55,3 +55,9 @@ O logo usado nos templates aponta para:
 O site não aplica bloqueio próprio de reenvio de código. Se aparecer mensagem de limite, ela vem do Supabase Auth.
 
 Para aumentar esse limite, acesse `Authentication` > `Rate Limits` no Supabase e ajuste os limites de envio de OTP/e-mail conforme a necessidade do projeto. Para produção, também é recomendado configurar SMTP próprio em `Authentication` > `Emails`, porque o envio padrão do Supabase é mais restritivo.
+
+## Evitar código inválido por leitura automática do e-mail
+
+O template `magic-link.html` não usa `{{ .ConfirmationURL }}`. Isso é intencional.
+
+Alguns provedores de e-mail abrem links automaticamente para verificar segurança. Se o template tiver o link mágico do Supabase, essa leitura automática pode consumir o token antes do usuário digitar o código. Por isso o e-mail deve exibir `{{ .Token }}` e, se tiver botão, apontar apenas para `https://www.facilimob.com/admin`.
