@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { supabaseAnon } from '../supabaseAdmin.js';
+import { supabaseAnon, userClient } from '../supabaseAdmin.js';
 import { requireAuth } from '../middleware/auth.js';
 
 const router = Router();
@@ -83,6 +83,49 @@ router.post('/password', async (req, res) => {
       role: req.session.role
     }
   });
+});
+
+router.post('/forgot-password', async (req, res) => {
+  const email = normalizeEmail(req.body.email);
+  const redirectTo = `${getPublicBaseUrl(req)}/reset-password.html`;
+
+  if (!email) {
+    return res.status(400).json({ error: 'Informe o e-mail.' });
+  }
+
+  const { error } = await supabaseAnon.auth.resetPasswordForEmail(email, {
+    redirectTo
+  });
+
+  if (error) {
+    logSupabasePasswordError(email, error);
+
+    if (isRateLimitError(error)) {
+      return res.status(429).json({ error: 'Muitos pedidos de recuperação. Aguarde alguns minutos e tente novamente.' });
+    }
+
+    return res.status(500).json({ error: 'Nao foi possivel enviar o e-mail de recuperacao.' });
+  }
+
+  res.json({ ok: true });
+});
+
+router.post('/update-password', requireAuth, async (req, res) => {
+  const password = String(req.body.password || '');
+
+  if (password.length < 8) {
+    return res.status(400).json({ error: 'A senha deve ter pelo menos 8 caracteres.' });
+  }
+
+  const client = userClient(req.accessToken);
+  const { error } = await client.auth.updateUser({ password });
+
+  if (error) {
+    logSupabasePasswordError(req.user.email, error);
+    return res.status(500).json({ error: 'Nao foi possivel atualizar a senha.' });
+  }
+
+  res.json({ ok: true });
 });
 
 router.post('/session-from-link', async (req, res) => {

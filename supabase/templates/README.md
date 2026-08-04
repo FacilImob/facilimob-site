@@ -43,8 +43,11 @@ Em `Authentication` > `URL Configuration`, mantenha:
 - `Site URL`: `https://www.facilimob.com`
 - `Redirect URLs`:
   - `https://www.facilimob.com/auth-callback.html`
+  - `https://www.facilimob.com/reset-password.html`
   - `https://facilimob-facil-imob.vercel.app/auth-callback.html`
+  - `https://facilimob-facil-imob.vercel.app/reset-password.html`
   - `http://localhost:3000/auth-callback.html`
+  - `http://localhost:3000/reset-password.html`
 
 O logo usado nos templates aponta para:
 

@@ -6,6 +6,7 @@ const status = document.querySelector('#status');
 const sentTo = document.querySelector('[data-sent-to]');
 const submitButton = form.querySelector('button[type="submit"]');
 const linkLoginButton = document.querySelector('[data-show-link-login]');
+const forgotPasswordButton = document.querySelector('[data-forgot-password]');
 const resendButton = document.querySelector('[data-resend]');
 const changeEmailButton = document.querySelector('[data-change-email]');
 const resendDefaultLabel = 'Reenviar link';
@@ -34,6 +35,30 @@ form.addEventListener('submit', async (event) => {
     toast(status, error.message, 'error');
   } finally {
     setSending(false, submitButton, 'Entrar');
+  }
+});
+
+forgotPasswordButton.addEventListener('click', async () => {
+  if (sending) return;
+
+  const email = form.elements.email.value.trim().toLowerCase();
+  if (!email) {
+    form.elements.email.focus();
+    toast(status, 'Informe seu e-mail para recuperar a senha.', 'error');
+    return;
+  }
+
+  try {
+    setSending(true, forgotPasswordButton, 'Enviando...');
+    await api('/api/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email })
+    });
+    toast(status, 'Enviamos um link para criar uma nova senha. Verifique seu e-mail.', 'success');
+  } catch (error) {
+    toast(status, error.message, 'error');
+  } finally {
+    setSending(false, forgotPasswordButton, 'Esqueci minha senha');
   }
 });
 
