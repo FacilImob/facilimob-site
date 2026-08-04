@@ -40,8 +40,9 @@ Ative somente se quiser que o Supabase envie avisos de segurança para os usuár
 
 Em `Authentication` > `URL Configuration`, mantenha:
 
-- `Site URL`: `https://facilimob-facil-imob.vercel.app`
+- `Site URL`: `https://www.facilimob.com`
 - `Redirect URLs`:
+  - `https://www.facilimob.com/auth-callback.html`
   - `https://facilimob-facil-imob.vercel.app/auth-callback.html`
   - `http://localhost:3000/auth-callback.html`
 

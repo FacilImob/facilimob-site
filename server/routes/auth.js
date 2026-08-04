@@ -8,7 +8,7 @@ const OTP_COOLDOWN_MS = 90 * 1000;
 
 router.post('/request-code', async (req, res) => {
   const email = normalizeEmail(req.body.email);
-  const redirectTo = `${req.protocol}://${req.get('host')}/auth-callback.html`;
+  const redirectTo = `${getPublicBaseUrl(req)}/auth-callback.html`;
 
   if (!email) {
     return res.status(400).json({ error: 'Informe o e-mail.' });
@@ -134,6 +134,15 @@ router.get('/me', requireAuth, (req, res) => {
 
 function normalizeEmail(email) {
   return String(email || '').trim().toLowerCase();
+}
+
+function getPublicBaseUrl(req) {
+  const configuredUrl = String(process.env.PUBLIC_SITE_URL || '').trim().replace(/\/+$/, '');
+  if (configuredUrl) return configuredUrl;
+
+  const protocol = req.get('x-forwarded-proto')?.split(',')[0]?.trim() || req.protocol;
+  const host = req.get('x-forwarded-host')?.split(',')[0]?.trim() || req.get('host');
+  return `${protocol}://${host}`;
 }
 
 function normalizeRole(role) {
