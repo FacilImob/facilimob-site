@@ -7,7 +7,8 @@
     "start": "node server/index.js",
     "dev": "node --watch server/index.js",
     "migrate": "node server/scripts/migrate.js",
-    "create-user": "node server/scripts/create-user.js"
+    "create-user": "node server/scripts/create-user.js",
+    "set-user-password": "node server/scripts/set-user-password.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",

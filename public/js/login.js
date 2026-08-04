@@ -5,6 +5,7 @@ const codeForm = document.querySelector('#codeForm');
 const status = document.querySelector('#status');
 const sentTo = document.querySelector('[data-sent-to]');
 const submitButton = form.querySelector('button[type="submit"]');
+const linkLoginButton = document.querySelector('[data-show-link-login]');
 const resendButton = document.querySelector('[data-resend]');
 const changeEmailButton = document.querySelector('[data-change-email]');
 const resendDefaultLabel = 'Reenviar link';
@@ -19,9 +20,35 @@ form.addEventListener('submit', async (event) => {
   if (sending) return;
 
   const email = form.elements.email.value.trim().toLowerCase();
+  const password = form.elements.password.value;
 
   try {
-    setSending(true, submitButton, 'Enviando...');
+    setSending(true, submitButton, 'Entrando...');
+    await api('/api/auth/password', {
+      method: 'POST',
+      body: JSON.stringify({ email, password })
+    });
+    window.location.href = '/site-admin.html';
+  } catch (error) {
+    showEmailStep(email);
+    toast(status, error.message, 'error');
+  } finally {
+    setSending(false, submitButton, 'Entrar');
+  }
+});
+
+linkLoginButton.addEventListener('click', async () => {
+  if (sending) return;
+
+  const email = form.elements.email.value.trim().toLowerCase();
+  if (!email) {
+    form.elements.email.focus();
+    toast(status, 'Informe o e-mail para receber o link de acesso.', 'error');
+    return;
+  }
+
+  try {
+    setSending(true, linkLoginButton, 'Enviando link...');
     await requestCode(email);
     showCodeStep(email);
     toast(status, 'Link de acesso enviado. Abra o e-mail e clique no botão para entrar.', 'success');
@@ -29,7 +56,7 @@ form.addEventListener('submit', async (event) => {
     showEmailStep(email);
     toast(status, error.message, 'error');
   } finally {
-    setSending(false, submitButton, 'Enviar link');
+    setSending(false, linkLoginButton, 'Receber link por e-mail');
   }
 });
 

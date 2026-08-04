@@ -52,6 +52,39 @@ router.post('/request-code', async (req, res) => {
   res.json({ ok: true });
 });
 
+router.post('/password', async (req, res) => {
+  const email = normalizeEmail(req.body.email);
+  const password = String(req.body.password || '');
+
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Informe e-mail e senha.' });
+  }
+
+  const { data, error } = await supabaseAnon.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if (error || !data?.session || !data?.user) {
+    logSupabasePasswordError(email, error);
+    return res.status(401).json({ error: 'E-mail ou senha invalidos.' });
+  }
+
+  req.session.accessToken = data.session.access_token;
+  req.session.refreshToken = data.session.refresh_token;
+  req.session.userId = data.user.id;
+  req.session.role = normalizeRole(data.user.app_metadata?.role);
+
+  res.json({
+    user: {
+      id: data.user.id,
+      email: data.user.email,
+      name: displayName(data.user),
+      role: req.session.role
+    }
+  });
+});
+
 router.post('/session-from-link', async (req, res) => {
   const accessToken = String(req.body.access_token || '').trim();
   const refreshToken = String(req.body.refresh_token || '').trim();
@@ -178,6 +211,24 @@ function logSupabaseOtpError(email, error) {
         details: error.details,
         hint: error.hint,
         stack: error.stack
+      },
+      null,
+      2
+    )
+  );
+}
+
+function logSupabasePasswordError(email, error) {
+  if (!error) return;
+  console.error(
+    '[auth:password] Supabase signInWithPassword error',
+    JSON.stringify(
+      {
+        email,
+        name: error.name,
+        status: error.status,
+        code: error.code,
+        message: error.message
       },
       null,
       2
