@@ -76,7 +76,11 @@ router.post('/verify-code', async (req, res) => {
     return res.status(400).json({ error: 'Informe o codigo de 6 digitos.' });
   }
 
-  const { data, error } = await verifyEmailOtp(email, token);
+  const { data, error } = await supabaseAnon.auth.verifyOtp({
+    email,
+    token,
+    type: 'email'
+  });
 
   if (error || !data?.session || !data?.user) {
     logSupabaseVerifyError(email, error);
@@ -97,44 +101,6 @@ router.post('/verify-code', async (req, res) => {
     }
   });
 });
-
-async function verifyEmailOtp(email, token) {
-  const magicLinkResult = await supabaseAnon.auth.verifyOtp({
-    email,
-    token,
-    type: 'magiclink'
-  });
-
-  if (!magicLinkResult.error && magicLinkResult.data?.session && magicLinkResult.data?.user) {
-    return magicLinkResult;
-  }
-
-  const emailResult = await supabaseAnon.auth.verifyOtp({
-    email,
-    token,
-    type: 'email'
-  });
-
-  if (emailResult.error) {
-    return {
-      data: emailResult.data,
-      error: {
-        name: emailResult.error.name,
-        status: emailResult.error.status,
-        code: emailResult.error.code,
-        message: emailResult.error.message,
-        firstAttempt: {
-          name: magicLinkResult.error?.name,
-          status: magicLinkResult.error?.status,
-          code: magicLinkResult.error?.code,
-          message: magicLinkResult.error?.message
-        }
-      }
-    };
-  }
-
-  return emailResult;
-}
 
 router.post('/logout', (req, res) => {
   req.session.destroy(() => {
@@ -216,8 +182,7 @@ function logSupabaseVerifyError(email, error) {
         name: error?.name,
         status: error?.status,
         code: error?.code,
-        message: error?.message,
-        firstAttempt: error?.firstAttempt
+        message: error?.message
       },
       null,
       2
