@@ -1,5 +1,7 @@
 import { api } from './api.js';
 
+const loginPath = window.location.protocol === 'file:' ? 'login.html' : '/login.html';
+
 export async function initLayout(active) {
   const userSlot = document.querySelector('[data-user]');
   const logoutButton = document.querySelector('[data-logout]');
@@ -18,12 +20,12 @@ export async function initLayout(active) {
       element.hidden = user.role !== 'admin';
     });
   } catch {
-    window.location.href = '/login.html';
+    window.location.href = loginPath;
   }
 
   logoutButton?.addEventListener('click', async () => {
     await api('/api/auth/logout', { method: 'POST' });
-    window.location.href = '/login.html';
+    window.location.href = loginPath;
   });
 
   const toggleMenu = () => {

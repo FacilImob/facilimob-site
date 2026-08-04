@@ -34,7 +34,7 @@ async function loadUsers() {
       <tr>
         <td><strong>${escapeHtml(user.nome || 'Sem nome')}</strong></td>
         <td>${escapeHtml(user.email)}</td>
-        <td><span class="role-pill ${user.role === 'admin' ? 'admin' : ''}">${user.role === 'admin' ? 'Admin' : 'Colaborador'}</span></td>
+        <td><span class="role-pill ${user.role === 'admin' ? 'admin' : ''}">${user.role === 'admin' ? 'Admin' : 'Editor'}</span></td>
         <td>${new Date(user.created_at).toLocaleString('pt-BR')}</td>
         <td><button class="btn" type="button" data-delete-user="${user.id}">Remover</button></td>
       </tr>

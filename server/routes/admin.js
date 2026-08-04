@@ -120,7 +120,8 @@ function formatUser(user) {
 }
 
 function normalizeRole(role) {
-  return role === 'admin' ? 'admin' : 'colaborador';
+  if (role === 'admin') return 'admin';
+  return 'editor';
 }
 
 export default router;

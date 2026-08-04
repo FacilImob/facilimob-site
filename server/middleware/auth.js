@@ -7,6 +7,8 @@ const protectedPages = new Set([
   '/historico.html',
   '/settings',
   '/settings.html',
+  '/site-admin',
+  '/site-admin.html',
   '/admin',
   '/admin.html'
 ]);
@@ -78,5 +80,6 @@ function wantsHtml(req) {
 }
 
 function normalizeRole(role) {
-  return role === 'admin' ? 'admin' : 'colaborador';
+  if (role === 'admin') return 'admin';
+  return 'editor';
 }

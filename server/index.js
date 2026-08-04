@@ -10,6 +10,7 @@ import configRoutes from './routes/config.js';
 import leadsRoutes from './routes/leads.js';
 import shareRoutes from './routes/share.js';
 import simulationsRoutes from './routes/simulations.js';
+import siteAdminRoutes from './routes/siteAdmin.js';
 import { pageAuth } from './middleware/auth.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -19,7 +20,7 @@ const port = process.env.PORT || 3000;
 const sessionSecret = process.env.SESSION_SECRET || 'facilimob-public-site-session';
 
 app.set('trust proxy', 1);
-app.use(express.json({ limit: '1mb' }));
+app.use(express.json({ limit: '8mb' }));
 app.use(cookieParser(sessionSecret));
 app.use(
   session({
@@ -46,6 +47,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/config', configRoutes);
 app.use('/api/leads', leadsRoutes);
 app.use('/api/share', shareRoutes);
+app.use('/api/site-admin', siteAdminRoutes);
 app.use('/api/simulations', simulationsRoutes);
 
 app.get('/', (_req, res) => {
