@@ -1,4 +1,5 @@
 import { supabaseAnon } from '../supabaseAdmin.js';
+import { readAuthCookie } from '../authCookie.js';
 
 const protectedPages = new Set([
   '/simulador',
@@ -14,6 +15,19 @@ const protectedPages = new Set([
 ]);
 
 export async function requireAuth(req, res, next) {
+  const cookieUser = readAuthCookie(req);
+  if (cookieUser) {
+    req.user = {
+      id: cookieUser.id,
+      email: cookieUser.email,
+      role: normalizeRole(cookieUser.role),
+      user_metadata: { name: cookieUser.name },
+      app_metadata: { role: normalizeRole(cookieUser.role), nome: cookieUser.name }
+    };
+    req.accessToken = '';
+    return next();
+  }
+
   if (req.session?.customAuth && req.session?.userId && req.session?.email) {
     req.user = {
       id: req.session.userId,

@@ -3,6 +3,7 @@ import crypto from 'node:crypto';
 import { supabaseAdmin } from '../supabaseAdmin.js';
 import { requireAuth } from '../middleware/auth.js';
 import { sendLoginCodeEmail } from '../email.js';
+import { clearAuthCookie, setAuthCookie } from '../authCookie.js';
 
 const router = Router();
 const OTP_TTL_MINUTES = 10;
@@ -82,18 +83,22 @@ router.post('/verify-code', async (req, res) => {
   req.session.role = normalizeRole(userData.user.app_metadata?.role);
   req.session.customAuth = true;
 
+  const responseUser = {
+    id: userData.user.id,
+    email: userData.user.email,
+    name: displayName(userData.user),
+    role: req.session.role
+  };
+  setAuthCookie(res, responseUser);
+
   res.json({
-    user: {
-      id: userData.user.id,
-      email: userData.user.email,
-      name: displayName(userData.user),
-      role: req.session.role
-    }
+    user: responseUser
   });
 });
 
 router.post('/logout', (req, res) => {
   req.session.destroy(() => {
+    clearAuthCookie(res);
     res.clearCookie('facilimob.sid');
     res.json({ ok: true });
   });
