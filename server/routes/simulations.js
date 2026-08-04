@@ -2,7 +2,7 @@ import { Router } from 'express';
 import QRCode from 'qrcode';
 import { createStaticPix, hasError } from 'pix-utils';
 import { requireAuth } from '../middleware/auth.js';
-import { supabaseAdmin, userClient } from '../supabaseAdmin.js';
+import { supabaseAdmin } from '../supabaseAdmin.js';
 
 const router = Router();
 
@@ -14,8 +14,7 @@ router.get('/', requireAuth, async (req, res) => {
   }
 
   const { search, dateFrom, dateTo, option, rentMin, rentMax } = filters;
-  const supabase = userClient(req.accessToken);
-  let query = supabase.from('simulations').select('*').order('criado_em', { ascending: false }).limit(100);
+  let query = supabaseAdmin.from('simulations').select('*').order('criado_em', { ascending: false }).limit(100);
 
   if (search) {
     const digits = onlyDigits(search);
@@ -53,8 +52,7 @@ router.get('/', requireAuth, async (req, res) => {
 });
 
 router.get('/:id', requireAuth, async (req, res) => {
-  const supabase = userClient(req.accessToken);
-  const { data, error } = await supabase.from('simulations').select('*').eq('id', req.params.id).single();
+  const { data, error } = await supabaseAdmin.from('simulations').select('*').eq('id', req.params.id).single();
 
   if (error) {
     return res.status(404).json({ error: 'Simulacao nao encontrada.' });
@@ -72,8 +70,7 @@ router.post('/', requireAuth, async (req, res) => {
     return res.status(400).json({ error: validation });
   }
 
-  const supabase = userClient(req.accessToken);
-  const { data: settings, error: settingsError } = await supabase.from('settings').select('*').eq('id', 1).single();
+  const { data: settings, error: settingsError } = await supabaseAdmin.from('settings').select('*').eq('id', 1).single();
 
   if (settingsError) {
     return res.status(500).json({ error: settingsError.message });
@@ -107,7 +104,7 @@ router.post('/', requireAuth, async (req, res) => {
   }
 
   const pixPayload = pix.toBRCode();
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('simulations')
     .insert({
       colaborador_id: req.user.id,
@@ -136,8 +133,7 @@ router.post('/', requireAuth, async (req, res) => {
 });
 
 router.post('/pix-preview', requireAuth, async (req, res) => {
-  const supabase = userClient(req.accessToken);
-  const { data: settings, error: settingsError } = await supabase.from('settings').select('*').eq('id', 1).single();
+  const { data: settings, error: settingsError } = await supabaseAdmin.from('settings').select('*').eq('id', 1).single();
 
   if (settingsError) {
     return res.status(500).json({ error: settingsError.message });
@@ -163,8 +159,7 @@ router.patch('/:id/option', requireAuth, async (req, res) => {
     return res.status(400).json({ error: 'Modalidade invalida.' });
   }
 
-  const supabase = userClient(req.accessToken);
-  const { data: current, error: currentError } = await supabase
+  const { data: current, error: currentError } = await supabaseAdmin
     .from('simulations')
     .select('*')
     .eq('id', req.params.id)
@@ -174,7 +169,7 @@ router.patch('/:id/option', requireAuth, async (req, res) => {
     return res.status(404).json({ error: 'Simulacao nao encontrada.' });
   }
 
-  const { data: settings, error: settingsError } = await supabase.from('settings').select('*').eq('id', 1).single();
+  const { data: settings, error: settingsError } = await supabaseAdmin.from('settings').select('*').eq('id', 1).single();
 
   if (settingsError) {
     return res.status(500).json({ error: settingsError.message });

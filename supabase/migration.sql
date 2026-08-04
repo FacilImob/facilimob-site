@@ -226,3 +226,19 @@ create policy "authenticated upload site media" on storage.objects
   with check (bucket_id = 'site-media' and auth.role() = 'authenticated');
 create policy "public read site media" on storage.objects
   for select using (bucket_id = 'site-media');
+
+create table if not exists public.login_otps (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  email text not null,
+  code_hash text not null,
+  expires_at timestamptz not null,
+  consumed_at timestamptz,
+  attempts integer not null default 0,
+  created_at timestamptz not null default now()
+);
+
+alter table public.login_otps enable row level security;
+
+create index if not exists login_otps_email_created_idx on public.login_otps (email, created_at desc);
+create index if not exists login_otps_expires_idx on public.login_otps (expires_at);

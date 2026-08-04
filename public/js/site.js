@@ -110,21 +110,6 @@ async function handleSupabaseLinkHash() {
 
   if (!accessToken || !refreshToken) return;
 
-  try {
-    const response = await fetch('/api/auth/session-from-link', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        access_token: accessToken,
-        refresh_token: refreshToken
-      })
-    });
-
-    if (!response.ok) throw new Error('Falha no login.');
-
-    window.history.replaceState({}, document.title, '/');
-    window.location.href = '/site-admin.html';
-  } catch {
-    window.location.href = '/login.html';
-  }
+  window.history.replaceState({}, document.title, '/');
+  window.location.href = '/login.html';
 }

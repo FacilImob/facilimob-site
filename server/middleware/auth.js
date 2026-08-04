@@ -14,6 +14,18 @@ const protectedPages = new Set([
 ]);
 
 export async function requireAuth(req, res, next) {
+  if (req.session?.customAuth && req.session?.userId && req.session?.email) {
+    req.user = {
+      id: req.session.userId,
+      email: req.session.email,
+      role: normalizeRole(req.session.role),
+      user_metadata: { name: req.session.name },
+      app_metadata: { role: normalizeRole(req.session.role), nome: req.session.name }
+    };
+    req.accessToken = '';
+    return next();
+  }
+
   const token = req.session?.accessToken;
 
   if (!token) {
