@@ -25,7 +25,7 @@ form.addEventListener('submit', async (event) => {
     showEmailStep();
     toast(status, error.message, 'error');
   } finally {
-    setSending(false, submitButton, 'Enviar codigo');
+    setSending(false, submitButton, 'Enviar link');
   }
 });
 
@@ -63,12 +63,12 @@ resendButton.addEventListener('click', async () => {
   try {
     setSending(true, resendButton, 'Reenviando...');
     await requestCode(currentEmail);
-    toast(status, 'Novo codigo enviado.', 'success');
+    toast(status, 'Novo link enviado.', 'success');
   } catch (error) {
     showEmailStep(currentEmail);
     toast(status, error.message, 'error');
   } finally {
-    setSending(false, resendButton, 'Reenviar codigo');
+    setSending(false, resendButton, 'Reenviar link');
   }
 });
 
@@ -84,7 +84,7 @@ function showCodeStep(email) {
   verifying = false;
   status.classList.remove('show', 'error', 'success');
   status.textContent = '';
-  sentTo.textContent = `Codigo enviado para ${email}`;
+  sentTo.textContent = `Link de acesso enviado para ${email}. Abra o e-mail e clique no link.`;
   form.hidden = true;
   codeForm.hidden = false;
   tokenInput.value = '';

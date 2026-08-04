@@ -1,6 +1,8 @@
 const WHATSAPP_BASE_URL = 'https://wa.me/5543936181186';
 const WHATSAPP_URL = `${WHATSAPP_BASE_URL}?text=${encodeURIComponent('Olá, quero saber mais sobre a Garantia FacilImob para alugar sem fiador.')}`;
 
+handleSupabaseLinkHash();
+
 const menuButton = document.querySelector('[data-menu-toggle]');
 const nav = document.querySelector('[data-site-nav]');
 
@@ -99,4 +101,30 @@ function animateCounter(element) {
   };
 
   requestAnimationFrame(tick);
+}
+
+async function handleSupabaseLinkHash() {
+  const params = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+  const accessToken = params.get('access_token');
+  const refreshToken = params.get('refresh_token');
+
+  if (!accessToken || !refreshToken) return;
+
+  try {
+    const response = await fetch('/api/auth/session-from-link', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        access_token: accessToken,
+        refresh_token: refreshToken
+      })
+    });
+
+    if (!response.ok) throw new Error('Falha no login.');
+
+    window.history.replaceState({}, document.title, '/');
+    window.location.href = '/site-admin.html';
+  } catch {
+    window.location.href = '/login.html';
+  }
 }

@@ -14,7 +14,7 @@
           <img class="brand-logo" src="/assets/logo-facilimob-full-cropped.png" alt="Facil Imob">
         </div>
         <h1 class="page-title">Acesso interno</h1>
-        <p class="page-subtitle">Informe seu e-mail de colaborador para receber o codigo de acesso.</p>
+        <p class="page-subtitle">Informe seu e-mail de colaborador para receber o link de acesso.</p>
         <div id="status" class="status"></div>
         <form id="loginForm" class="form-grid login-step">
           <label class="field">
@@ -23,16 +23,16 @@
           </label>
           <button class="btn primary" type="submit">
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4 20-7Z"/><path d="M22 2 11 13"/></svg>
-            Enviar codigo
+            Enviar link
           </button>
         </form>
         <div id="codeForm" class="form-grid login-step" hidden>
           <p class="sent-to" data-sent-to></p>
           <label class="field">
-            <span class="label">Codigo de 6 digitos</span>
+            <span class="label">Codigo de 6 digitos, se aparecer no e-mail</span>
             <input class="input code-input" name="token" inputmode="numeric" autocomplete="one-time-code" maxlength="6" required>
           </label>
-          <button class="btn" type="button" data-resend>Reenviar codigo</button>
+          <button class="btn" type="button" data-resend>Reenviar link</button>
         </div>
       </section>
     </main>

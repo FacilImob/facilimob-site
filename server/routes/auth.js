@@ -6,6 +6,7 @@ const router = Router();
 
 router.post('/request-code', async (req, res) => {
   const email = normalizeEmail(req.body.email);
+  const redirectTo = `${req.protocol}://${req.get('host')}/auth-callback.html`;
 
   if (!email) {
     return res.status(400).json({ error: 'Informe o e-mail.' });
@@ -14,6 +15,7 @@ router.post('/request-code', async (req, res) => {
   const { error } = await supabaseAnon.auth.signInWithOtp({
     email,
     options: {
+      emailRedirectTo: redirectTo,
       shouldCreateUser: false
     }
   });
@@ -35,6 +37,35 @@ router.post('/request-code', async (req, res) => {
   }
 
   res.json({ ok: true });
+});
+
+router.post('/session-from-link', async (req, res) => {
+  const accessToken = String(req.body.access_token || '').trim();
+  const refreshToken = String(req.body.refresh_token || '').trim();
+
+  if (!accessToken || !refreshToken) {
+    return res.status(400).json({ error: 'Link de acesso incompleto.' });
+  }
+
+  const { data, error } = await supabaseAnon.auth.getUser(accessToken);
+
+  if (error || !data?.user) {
+    return res.status(401).json({ error: 'Link de acesso invalido ou expirado.' });
+  }
+
+  req.session.accessToken = accessToken;
+  req.session.refreshToken = refreshToken;
+  req.session.userId = data.user.id;
+  req.session.role = normalizeRole(data.user.app_metadata?.role);
+
+  res.json({
+    user: {
+      id: data.user.id,
+      email: data.user.email,
+      name: displayName(data.user),
+      role: req.session.role
+    }
+  });
 });
 
 router.post('/verify-code', async (req, res) => {
@@ -93,7 +124,8 @@ function normalizeEmail(email) {
 }
 
 function normalizeRole(role) {
-  return role === 'admin' ? 'admin' : 'colaborador';
+  if (role === 'admin') return 'admin';
+  return 'editor';
 }
 
 function displayName(user) {
