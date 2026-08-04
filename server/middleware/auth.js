@@ -1,4 +1,5 @@
 import { supabaseAnon } from '../supabaseAdmin.js';
+import { readAuthCookie } from '../authCookie.js';
 
 const protectedPages = new Set([
   '/',
@@ -13,6 +14,14 @@ const protectedPages = new Set([
 ]);
 
 export async function requireAuth(req, res, next) {
+  const cookieUser = readAuthCookie(req);
+
+  if (cookieUser) {
+    req.user = cookieUser;
+    req.accessToken = null;
+    return next();
+  }
+
   const token = req.session?.accessToken;
 
   if (!token) {

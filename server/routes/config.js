@@ -1,12 +1,11 @@
 import { Router } from 'express';
 import { requireAuth } from '../middleware/auth.js';
-import { userClient } from '../supabaseAdmin.js';
+import { supabaseAdmin } from '../supabaseAdmin.js';
 
 const router = Router();
 
 router.get('/', requireAuth, async (req, res) => {
-  const supabase = userClient(req.accessToken);
-  const { data, error } = await supabase.from('settings').select('*').eq('id', 1).single();
+  const { data, error } = await supabaseAdmin.from('settings').select('*').eq('id', 1).single();
 
   if (error) {
     return res.status(500).json({ error: error.message });
@@ -36,8 +35,7 @@ router.put('/', requireAuth, async (req, res) => {
 
   payload.atualizado_em = new Date().toISOString();
 
-  const supabase = userClient(req.accessToken);
-  const { data, error } = await supabase.from('settings').update(payload).eq('id', 1).select('*').single();
+  const { data, error } = await supabaseAdmin.from('settings').update(payload).eq('id', 1).select('*').single();
 
   if (error) {
     return res.status(500).json({ error: error.message });
