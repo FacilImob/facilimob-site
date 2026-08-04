@@ -15,7 +15,7 @@ Estes arquivos deixam os e-mails do Supabase Auth com a identidade da FacilImob,
 
 | Modelo no Supabase | Assunto | Arquivo |
 | --- | --- | --- |
-| Magic Link / OTP | Seu acesso ao painel FacilImob | `magic-link.html` |
+| Magic Link / OTP | Seu código de acesso FacilImob | `magic-link.html` |
 | Invite User | Convite para acessar o painel FacilImob | `invite.html` |
 | Confirm Signup | Confirme seu e-mail na FacilImob | `confirmation.html` |
 | Reset Password | Redefinição de senha FacilImob | `recovery.html` |
@@ -43,12 +43,15 @@ Em `Authentication` > `URL Configuration`, mantenha:
 - `Site URL`: `https://www.facilimob.com`
 - `Redirect URLs`:
   - `https://www.facilimob.com/auth-callback.html`
-  - `https://www.facilimob.com/reset-password.html`
   - `https://facilimob-facil-imob.vercel.app/auth-callback.html`
-  - `https://facilimob-facil-imob.vercel.app/reset-password.html`
   - `http://localhost:3000/auth-callback.html`
-  - `http://localhost:3000/reset-password.html`
 
 O logo usado nos templates aponta para:
 
 `https://facilimob-facil-imob.vercel.app/assets/logo-facilimob-horizontal-cropped.png`
+
+## Limite de envio de códigos
+
+O site não aplica bloqueio próprio de reenvio de código. Se aparecer mensagem de limite, ela vem do Supabase Auth.
+
+Para aumentar esse limite, acesse `Authentication` > `Rate Limits` no Supabase e ajuste os limites de envio de OTP/e-mail conforme a necessidade do projeto. Para produção, também é recomendado configurar SMTP próprio em `Authentication` > `Emails`, porque o envio padrão do Supabase é mais restritivo.

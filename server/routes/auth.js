@@ -1,10 +1,8 @@
 import { Router } from 'express';
-import { supabaseAnon, userClient } from '../supabaseAdmin.js';
+import { supabaseAnon } from '../supabaseAdmin.js';
 import { requireAuth } from '../middleware/auth.js';
 
 const router = Router();
-const otpCooldownByEmail = new Map();
-const OTP_COOLDOWN_MS = 90 * 1000;
 
 router.post('/request-code', async (req, res) => {
   const email = normalizeEmail(req.body.email);
@@ -12,16 +10,6 @@ router.post('/request-code', async (req, res) => {
 
   if (!email) {
     return res.status(400).json({ error: 'Informe o e-mail.' });
-  }
-
-  const recentlySent = getOtpCooldownRemaining(email);
-  if (recentlySent > 0) {
-    return res.json({
-      ok: true,
-      reused: true,
-      waitSeconds: recentlySent,
-      message: 'Um link ja foi enviado ha pouco. Use o e-mail mais recente para entrar.'
-    });
   }
 
   const { error } = await supabaseAnon.auth.signInWithOtp({
@@ -38,7 +26,7 @@ router.post('/request-code', async (req, res) => {
     if (isRateLimitError(error)) {
       return res
         .status(429)
-        .json({ error: 'Muitos links solicitados recentemente. Use o ultimo e-mail recebido ou aguarde alguns minutos para pedir outro.' });
+        .json({ error: 'O Supabase bloqueou novos envios por limite de seguranca. Aguarde alguns minutos ou aumente o limite em Authentication > Rate Limits.' });
     }
 
     if (isUnauthorizedOtpError(error)) {
@@ -46,83 +34,6 @@ router.post('/request-code', async (req, res) => {
     }
 
     return res.status(500).json({ error: 'Nao foi possivel enviar o e-mail. Verifique a configuracao de e-mail do sistema.' });
-  }
-
-  otpCooldownByEmail.set(email, Date.now());
-  res.json({ ok: true });
-});
-
-router.post('/password', async (req, res) => {
-  const email = normalizeEmail(req.body.email);
-  const password = String(req.body.password || '');
-
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Informe e-mail e senha.' });
-  }
-
-  const { data, error } = await supabaseAnon.auth.signInWithPassword({
-    email,
-    password
-  });
-
-  if (error || !data?.session || !data?.user) {
-    logSupabasePasswordError(email, error);
-    return res.status(401).json({ error: 'E-mail ou senha invalidos.' });
-  }
-
-  req.session.accessToken = data.session.access_token;
-  req.session.refreshToken = data.session.refresh_token;
-  req.session.userId = data.user.id;
-  req.session.role = normalizeRole(data.user.app_metadata?.role);
-
-  res.json({
-    user: {
-      id: data.user.id,
-      email: data.user.email,
-      name: displayName(data.user),
-      role: req.session.role
-    }
-  });
-});
-
-router.post('/forgot-password', async (req, res) => {
-  const email = normalizeEmail(req.body.email);
-  const redirectTo = `${getPublicBaseUrl(req)}/reset-password.html`;
-
-  if (!email) {
-    return res.status(400).json({ error: 'Informe o e-mail.' });
-  }
-
-  const { error } = await supabaseAnon.auth.resetPasswordForEmail(email, {
-    redirectTo
-  });
-
-  if (error) {
-    logSupabasePasswordError(email, error);
-
-    if (isRateLimitError(error)) {
-      return res.status(429).json({ error: 'Muitos pedidos de recuperação. Aguarde alguns minutos e tente novamente.' });
-    }
-
-    return res.status(500).json({ error: 'Nao foi possivel enviar o e-mail de recuperacao.' });
-  }
-
-  res.json({ ok: true });
-});
-
-router.post('/update-password', requireAuth, async (req, res) => {
-  const password = String(req.body.password || '');
-
-  if (password.length < 8) {
-    return res.status(400).json({ error: 'A senha deve ter pelo menos 8 caracteres.' });
-  }
-
-  const client = userClient(req.accessToken);
-  const { error } = await client.auth.updateUser({ password });
-
-  if (error) {
-    logSupabasePasswordError(req.user.email, error);
-    return res.status(500).json({ error: 'Nao foi possivel atualizar a senha.' });
   }
 
   res.json({ ok: true });
@@ -259,37 +170,6 @@ function logSupabaseOtpError(email, error) {
       2
     )
   );
-}
-
-function logSupabasePasswordError(email, error) {
-  if (!error) return;
-  console.error(
-    '[auth:password] Supabase signInWithPassword error',
-    JSON.stringify(
-      {
-        email,
-        name: error.name,
-        status: error.status,
-        code: error.code,
-        message: error.message
-      },
-      null,
-      2
-    )
-  );
-}
-
-function getOtpCooldownRemaining(email) {
-  const sentAt = otpCooldownByEmail.get(email);
-  if (!sentAt) return 0;
-
-  const elapsed = Date.now() - sentAt;
-  if (elapsed >= OTP_COOLDOWN_MS) {
-    otpCooldownByEmail.delete(email);
-    return 0;
-  }
-
-  return Math.ceil((OTP_COOLDOWN_MS - elapsed) / 1000);
 }
 
 export default router;
