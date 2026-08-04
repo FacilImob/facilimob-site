@@ -267,6 +267,13 @@ button {
   padding: 10px 12px;
 }
 
+.login-help {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 0;
+}
+
 .error {
   color: var(--danger);
   font-size: 13px;

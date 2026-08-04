@@ -3,6 +3,8 @@ import { supabaseAnon } from '../supabaseAdmin.js';
 import { requireAuth } from '../middleware/auth.js';
 
 const router = Router();
+const otpCooldownByEmail = new Map();
+const OTP_COOLDOWN_MS = 90 * 1000;
 
 router.post('/request-code', async (req, res) => {
   const email = normalizeEmail(req.body.email);
@@ -10,6 +12,16 @@ router.post('/request-code', async (req, res) => {
 
   if (!email) {
     return res.status(400).json({ error: 'Informe o e-mail.' });
+  }
+
+  const recentlySent = getOtpCooldownRemaining(email);
+  if (recentlySent > 0) {
+    return res.json({
+      ok: true,
+      reused: true,
+      waitSeconds: recentlySent,
+      message: 'Um link ja foi enviado ha pouco. Use o e-mail mais recente para entrar.'
+    });
   }
 
   const { error } = await supabaseAnon.auth.signInWithOtp({
@@ -26,7 +38,7 @@ router.post('/request-code', async (req, res) => {
     if (isRateLimitError(error)) {
       return res
         .status(429)
-        .json({ error: 'Muitos codigos solicitados recentemente. Aguarde alguns minutos e tente novamente.' });
+        .json({ error: 'Muitos links solicitados recentemente. Use o ultimo e-mail recebido ou aguarde alguns minutos para pedir outro.' });
     }
 
     if (isUnauthorizedOtpError(error)) {
@@ -36,6 +48,7 @@ router.post('/request-code', async (req, res) => {
     return res.status(500).json({ error: 'Nao foi possivel enviar o e-mail. Verifique a configuracao de e-mail do sistema.' });
   }
 
+  otpCooldownByEmail.set(email, Date.now());
   res.json({ ok: true });
 });
 
@@ -161,6 +174,19 @@ function logSupabaseOtpError(email, error) {
       2
     )
   );
+}
+
+function getOtpCooldownRemaining(email) {
+  const sentAt = otpCooldownByEmail.get(email);
+  if (!sentAt) return 0;
+
+  const elapsed = Date.now() - sentAt;
+  if (elapsed >= OTP_COOLDOWN_MS) {
+    otpCooldownByEmail.delete(email);
+    return 0;
+  }
+
+  return Math.ceil((OTP_COOLDOWN_MS - elapsed) / 1000);
 }
 
 export default router;
