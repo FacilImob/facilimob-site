@@ -11,12 +11,20 @@ let verifying = false;
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
   const email = form.elements.email.value.trim().toLowerCase();
+  const button = form.querySelector('button[type="submit"]');
+  const originalText = button.innerHTML;
 
   try {
+    button.disabled = true;
+    button.innerHTML = 'Enviando...';
+    toast(status, 'Enviando codigo de acesso...', 'success');
     await requestCode(email);
     showCodeStep(email);
   } catch (error) {
     toast(status, error.message, 'error');
+  } finally {
+    button.disabled = false;
+    button.innerHTML = originalText;
   }
 });
 
