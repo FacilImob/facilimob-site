@@ -1,12 +1,9 @@
 import { api, toast } from './api.js';
 
 const form = document.querySelector('#loginForm');
-const codeForm = document.querySelector('#codeForm');
 const status = document.querySelector('#status');
-const sentTo = document.querySelector('[data-sent-to]');
-const tokenInput = codeForm.querySelector('[name="token"]');
-let currentEmail = '';
-let verifying = false;
+
+completeMagicLink();
 
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
@@ -16,52 +13,15 @@ form.addEventListener('submit', async (event) => {
 
   try {
     button.disabled = true;
-    button.innerHTML = 'Enviando...';
-    toast(status, 'Enviando codigo de acesso...', 'success');
+    button.innerHTML = 'Enviando link...';
+    toast(status, 'Enviando link de acesso...', 'success');
     await requestCode(email);
-    showCodeStep(email);
+    toast(status, `Enviamos um link de acesso para ${email}. Abra o e-mail e clique no link para entrar.`, 'success');
   } catch (error) {
     toast(status, error.message, 'error');
   } finally {
     button.disabled = false;
     button.innerHTML = originalText;
-  }
-});
-
-tokenInput.addEventListener('input', async () => {
-  tokenInput.value = tokenInput.value.replace(/\D/g, '').slice(0, 6);
-
-  if (tokenInput.value.length === 6 && !verifying) {
-    await verifyCode();
-  }
-});
-
-async function verifyCode() {
-  const token = tokenInput.value.replace(/\D/g, '');
-  verifying = true;
-  tokenInput.disabled = true;
-
-  try {
-    await api('/api/auth/verify-code', {
-      method: 'POST',
-      body: JSON.stringify({ email: currentEmail, token })
-    });
-    window.location.href = '/index.html';
-  } catch (error) {
-    toast(status, error.message, 'error');
-    tokenInput.value = '';
-    tokenInput.disabled = false;
-    tokenInput.focus();
-    verifying = false;
-  }
-}
-
-document.querySelector('[data-resend]').addEventListener('click', async () => {
-  try {
-    await requestCode(currentEmail);
-    toast(status, 'Novo codigo enviado.', 'success');
-  } catch (error) {
-    toast(status, error.message, 'error');
   }
 });
 
@@ -72,15 +32,24 @@ async function requestCode(email) {
   });
 }
 
-function showCodeStep(email) {
-  currentEmail = email;
-  verifying = false;
-  status.classList.remove('show', 'error', 'success');
-  status.textContent = '';
-  sentTo.textContent = `Codigo enviado para ${email}`;
+async function completeMagicLink() {
+  const params = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+  const accessToken = params.get('access_token');
+
+  if (!accessToken) return;
+
+  history.replaceState(null, '', window.location.pathname);
   form.hidden = true;
-  codeForm.hidden = false;
-  tokenInput.value = '';
-  tokenInput.disabled = false;
-  tokenInput.focus();
+  toast(status, 'Validando link de acesso...', 'success');
+
+  try {
+    await api('/api/auth/complete-link', {
+      method: 'POST',
+      body: JSON.stringify({ access_token: accessToken })
+    });
+    window.location.href = '/index.html';
+  } catch (error) {
+    form.hidden = false;
+    toast(status, error.message, 'error');
+  }
 }
