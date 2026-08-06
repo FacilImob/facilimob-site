@@ -71,18 +71,51 @@ router.post('/complete-link', async (req, res) => {
     return res.status(401).json({ error: 'E-mail nao encontrado ou nao autorizado.' });
   }
 
-  const responseUser = {
-    id: user.id,
-    email: user.email,
-    name: displayName(user),
-    role: normalizeRole(user.app_metadata?.role)
-  };
+  const responseUser = startSession(req, res, user);
 
-  req.session.userId = responseUser.id;
-  req.session.email = responseUser.email;
-  req.session.name = responseUser.name;
-  req.session.role = responseUser.role;
-  setAuthCookie(res, responseUser);
+  res.json({
+    user: responseUser
+  });
+});
+
+router.post('/verify-code', async (req, res) => {
+  const email = normalizeEmail(req.body.email);
+  const token = String(req.body.token || '').replace(/\D/g, '');
+
+  if (!email || token.length !== 6) {
+    return res.status(400).json({ error: 'Informe o e-mail e o codigo de 6 digitos.' });
+  }
+
+  const allowedUser = await findUserByEmail(email);
+
+  if (!allowedUser) {
+    return res.status(401).json({ error: 'E-mail nao encontrado ou nao autorizado.' });
+  }
+
+  const { data, error } = await verifySupabaseOtp(email, token);
+
+  if (error || !data?.user) {
+    console.error(
+      '[auth:verify-code] Supabase OTP error',
+      JSON.stringify({
+        email,
+        name: error?.name,
+        status: error?.status,
+        code: error?.code,
+        message: error?.message
+      })
+    );
+
+    return res.status(401).json({ error: 'Codigo invalido ou expirado.' });
+  }
+
+  const user = await findUserByEmail(data.user.email);
+
+  if (!user) {
+    return res.status(401).json({ error: 'E-mail nao encontrado ou nao autorizado.' });
+  }
+
+  const responseUser = startSession(req, res, user);
 
   res.json({
     user: responseUser
@@ -115,6 +148,36 @@ function normalizeEmail(email) {
 function buildRedirectUrl(req) {
   const baseUrl = String(process.env.PUBLIC_APP_URL || `${req.protocol}://${req.get('host')}`).replace(/\/+$/, '');
   return `${baseUrl}/login.html`;
+}
+
+async function verifySupabaseOtp(email, token) {
+  const attempts = ['email', 'magiclink'];
+  let lastResult;
+
+  for (const type of attempts) {
+    const result = await supabaseAnon.auth.verifyOtp({ email, token, type });
+    if (!result.error) return result;
+    lastResult = result;
+  }
+
+  return lastResult;
+}
+
+function startSession(req, res, user) {
+  const responseUser = {
+    id: user.id,
+    email: user.email,
+    name: displayName(user),
+    role: normalizeRole(user.app_metadata?.role)
+  };
+
+  req.session.userId = responseUser.id;
+  req.session.email = responseUser.email;
+  req.session.name = responseUser.name;
+  req.session.role = responseUser.role;
+  setAuthCookie(res, responseUser);
+
+  return responseUser;
 }
 
 async function findUserByEmail(emailToFind) {
