@@ -2,13 +2,15 @@ export const dynamicPageStyles = `
   .dynamic-page { color: #1f2937; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
   .dynamic-section { background: var(--section-bg, transparent); padding: var(--section-padding, 56px 20px); position: relative; }
   .dynamic-row { display: flex; gap: 24px; margin: 0 auto; max-width: var(--page-width, 1120px); width: 100%; }
-  .dynamic-column { flex: var(--column-width, 1 1 0); min-width: 0; }
+  .dynamic-column { flex: var(--column-width, 1 1 0); min-width: 0; padding: var(--column-padding, 0); }
   .dynamic-text { color: var(--block-color, inherit); font-size: var(--block-font-size, inherit); line-height: 1.65; margin: 0 0 18px; text-align: var(--block-align, left); }
   .dynamic-button-wrap { margin: 0 0 18px; text-align: var(--block-align, left); }
   .dynamic-button { background: var(--button-bg, #f4770b); border-radius: 8px; color: #fff; display: inline-flex; font-size: var(--block-font-size, inherit); font-weight: 700; padding: 12px 18px; text-decoration: none; }
   .dynamic-container { background: var(--container-bg, transparent); border: var(--container-border, 0 solid transparent); border-radius: var(--container-radius, 0); margin: 0 0 18px; padding: var(--container-padding, 20px); }
   .dynamic-image-wrap { margin: 0 0 18px; text-align: var(--block-align, left); }
   .dynamic-image { border-radius: var(--image-radius, 0); display: inline-block; height: auto; max-width: 100%; width: var(--image-width, auto); }
+  .dynamic-image-placeholder { align-items: center; background: #f8fafc; border: 1px dashed #d9e2ec; border-radius: var(--image-radius, 8px); color: #64748b; display: inline-flex; flex-direction: column; font-weight: 700; gap: 8px; justify-content: center; min-height: 180px; padding: 28px; width: min(100%, var(--image-width, 100%)); }
+  .dynamic-image-placeholder::before { content: ""; border: 2px solid currentColor; border-radius: 6px; display: block; height: 32px; opacity: 0.75; width: 42px; }
   .dynamic-video { margin: 0 0 18px; }
   .dynamic-video-frame { aspect-ratio: 16 / 9; background: #000; border: 0; border-radius: 8px; display: block; width: 100%; }
   .dynamic-video video { border-radius: 8px; display: block; width: 100%; }
@@ -45,7 +47,7 @@ export function renderResponsiveStyles(pageJson = {}) {
 
 function renderSection(section, options) {
   const background = cleanCssValue(section?.background);
-  const padding = cleanCssValue(section?.padding);
+  const padding = paddingCss(section?.padding);
   const style = [
     background ? `--section-bg:${background}` : '',
     padding ? `--section-padding:${padding}` : ''
@@ -65,9 +67,14 @@ function renderRow(row, options) {
 function renderColumn(column, options) {
   const width = Number(column?.widthFraction);
   const flex = Number.isFinite(width) && width > 0 ? `${width} ${width} 0` : '';
+  const padding = paddingCss(column?.padding);
   const blocks = Array.isArray(column?.blocks) ? column.blocks : [];
+  const style = [
+    flex ? `--column-width:${flex}` : '',
+    padding ? `--column-padding:${padding}` : ''
+  ].filter(Boolean).join(';');
   const attrs = editableAttrs('column', column?.id, options, ` data-drop-column="${escapeHtml(column?.id || '')}"`);
-  return `<div class="dynamic-column${selectedClass(column?.id, options)}"${attrs}${flex ? ` style="${escapeHtml(`--column-width:${flex}`)}"` : ''}>${blocks.map((block) => renderBlock(block, options)).join('')}${options.editable ? '<div class="editor-drop-hint">Solte blocos aqui</div>' : ''}</div>`;
+  return `<div class="dynamic-column${selectedClass(column?.id, options)}"${attrs}${style ? ` style="${escapeHtml(style)}"` : ''}>${blocks.map((block) => renderBlock(block, options)).join('')}${options.editable ? '<div class="editor-drop-hint">Solte blocos aqui</div>' : ''}</div>`;
 }
 
 function renderBlock(block, options) {
@@ -89,8 +96,9 @@ function renderTextBlock(block, options) {
   const text = block.html || block.content || block.text || '';
   const tag = ['h1', 'h2', 'h3', 'p'].includes(block.tag) ? block.tag : 'p';
   const style = blockStyle(block);
-  const attrs = editableAttrs('block', block?.id, options, ` data-block-id="${escapeHtml(block?.id || '')}" draggable="${options.editable ? 'true' : 'false'}"`);
-  return `<${tag} class="dynamic-text${selectedClass(block?.id, options)}"${attrs}${style ? ` style="${escapeHtml(style)}"` : ''}>${escapeHtml(text)}</${tag}>`;
+  const editAttrs = options.editable ? ' contenteditable="true" spellcheck="true" data-inline-text="true"' : '';
+  const attrs = editableAttrs('block', block?.id, options, ` data-block-id="${escapeHtml(block?.id || '')}" draggable="false"${editAttrs}`);
+  return `<${tag} class="dynamic-text${selectedClass(block?.id, options)}"${attrs}${style ? ` style="${escapeHtml(style)}"` : ''}>${sanitizeRichText(text)}</${tag}>`;
 }
 
 function renderButtonBlock(block, options) {
@@ -103,18 +111,20 @@ function renderButtonBlock(block, options) {
 
 function renderContainerBlock(block, options) {
   const children = Array.isArray(block.blocks) ? block.blocks : [];
+  const padding = paddingCss(block.padding);
   const style = [
     cleanCssValue(block.background) ? `--container-bg:${cleanCssValue(block.background)}` : '',
     cleanCssValue(block.border) ? `--container-border:${cleanCssValue(block.border)}` : '',
     cleanCssValue(block.radius) ? `--container-radius:${cleanCssValue(block.radius)}` : '',
-    cleanCssValue(block.padding) ? `--container-padding:${cleanCssValue(block.padding)}` : ''
+    padding ? `--container-padding:${padding}` : ''
   ].filter(Boolean).join(';');
   const attrs = editableAttrs('block', block?.id, options, ` data-block-id="${escapeHtml(block?.id || '')}" data-drop-container="${escapeHtml(block?.id || '')}" draggable="${options.editable ? 'true' : 'false'}"`);
   return `<div class="dynamic-container${selectedClass(block?.id, options)}"${attrs}${style ? ` style="${escapeHtml(style)}"` : ''}>${children.map((child) => renderBlock(child, options)).join('')}${options.editable ? '<div class="editor-drop-hint">Solte blocos no container</div>' : ''}</div>`;
 }
 
 function renderImageBlock(block, options) {
-  const url = safeHref(block.url || '');
+  const rawUrl = String(block.url || '').trim();
+  const url = rawUrl ? safeHref(rawUrl) : '';
   const alt = block.alt || '';
   const width = cleanCssValue(block.width || '');
   const radius = cleanCssValue(block.radius || '');
@@ -268,6 +278,43 @@ function socialLabel(name) {
 
 function socialIcon(name) {
   return { instagram: 'IG', facebook: 'f', whatsapp: 'WA', linkedin: 'in' }[name] || name.slice(0, 2).toUpperCase();
+}
+
+function paddingCss(value) {
+  if (!value) return '';
+  if (typeof value === 'string') return cleanCssValue(value);
+  if (typeof value !== 'object') return '';
+  const top = pixelValue(value.top);
+  const right = pixelValue(value.right);
+  const bottom = pixelValue(value.bottom);
+  const left = pixelValue(value.left);
+  return `${top} ${right} ${bottom} ${left}`;
+}
+
+function pixelValue(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return '0px';
+  return `${Math.max(0, number)}px`;
+}
+
+function sanitizeRichText(value) {
+  const html = String(value || '');
+  const allowed = new Set(['a', 'b', 'br', 'div', 'em', 'h1', 'h2', 'h3', 'i', 'p', 'strong']);
+  return html.replace(/<[^>]*>|[^<]+/g, (token) => {
+    if (!token.startsWith('<')) return escapeHtml(token);
+
+    const match = token.match(/^<\/?\s*([a-z0-9]+)([^>]*)>$/i);
+    if (!match) return '';
+    const tag = match[1].toLowerCase();
+    if (!allowed.has(tag)) return '';
+    if (token.startsWith('</')) return `</${tag}>`;
+    if (tag === 'br') return '<br>';
+    if (tag !== 'a') return `<${tag}>`;
+
+    const hrefMatch = match[2].match(/\shref\s*=\s*(["'])(.*?)\1/i);
+    const href = hrefMatch ? safeHref(hrefMatch[2]) : '#';
+    return `<a href="${escapeHtml(href)}" rel="noopener">`;
+  });
 }
 
 function cleanCssValue(value) {

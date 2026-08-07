@@ -8,6 +8,7 @@ const pageTitle = document.querySelector('#pageTitle');
 const pageMeta = document.querySelector('#pageMeta');
 const rowDialog = document.querySelector('#rowDialog');
 const imageUpload = document.querySelector('#imageUpload');
+const inlineToolbar = document.createElement('div');
 
 let page = null;
 let draft = { pageWidth: '1140px', sections: [] };
@@ -22,6 +23,20 @@ let suppressHistory = false;
 let currentBreakpoint = 'desktop';
 
 document.querySelector('#dynamicStyles').textContent = dynamicPageStyles;
+inlineToolbar.className = 'editor-inline-toolbar';
+inlineToolbar.hidden = true;
+inlineToolbar.innerHTML = `
+  <button type="button" data-inline-command="bold"><strong>B</strong></button>
+  <button type="button" data-inline-command="italic"><em>I</em></button>
+  <button type="button" data-inline-command="link">Link</button>
+  <select data-inline-heading aria-label="Formato do texto">
+    <option value="p">P</option>
+    <option value="h1">H1</option>
+    <option value="h2">H2</option>
+    <option value="h3">H3</option>
+  </select>
+`;
+document.body.append(inlineToolbar);
 
 init();
 
@@ -88,11 +103,42 @@ canvas.addEventListener('click', (event) => {
       id: editable.dataset.editorId,
       kind: editable.dataset.editorKind
     };
+    if (event.target.closest('.dynamic-image-placeholder')) {
+      const block = findEntity(selected.id)?.entity;
+      if (block?.type === 'image' && !block.url) {
+        markSelectedElement(editable);
+        renderProperties();
+        imageUpload.click();
+        return;
+      }
+    }
+    if (editable.matches('[data-inline-text]')) {
+      markSelectedElement(editable);
+      renderProperties();
+      showInlineToolbar(editable);
+      return;
+    }
     render();
   }
 });
 
+canvas.addEventListener('input', (event) => {
+  const editableText = event.target.closest('[data-inline-text]');
+  if (!editableText) return;
+  updateInlineText(editableText, false);
+});
+
+canvas.addEventListener('blur', (event) => {
+  const editableText = event.target.closest('[data-inline-text]');
+  if (!editableText) return;
+  updateInlineText(editableText, true);
+}, true);
+
 canvas.addEventListener('dragstart', (event) => {
+  if (event.target.closest('[data-inline-text]')) {
+    event.preventDefault();
+    return;
+  }
   const block = event.target.closest('[data-block-id]');
   if (!block) return;
   draggedBlockId = block.dataset.blockId;
@@ -139,6 +185,49 @@ document.addEventListener('dragstart', (event) => {
   if (!palette) return;
   event.dataTransfer.setData('text/plain', JSON.stringify({ newBlockType: palette.dataset.newBlock }));
   event.dataTransfer.effectAllowed = 'copy';
+});
+
+document.addEventListener('selectionchange', () => {
+  const node = document.getSelection()?.anchorNode;
+  const element = node?.nodeType === Node.TEXT_NODE ? node.parentElement : node;
+  const editableText = element?.closest?.('[data-inline-text]');
+  if (!editableText || !canvas.contains(editableText)) {
+    inlineToolbar.hidden = true;
+    return;
+  }
+  showInlineToolbar(editableText);
+});
+
+inlineToolbar.addEventListener('mousedown', (event) => {
+  event.preventDefault();
+});
+
+inlineToolbar.addEventListener('click', (event) => {
+  const button = event.target.closest('[data-inline-command]');
+  if (!button) return;
+  const editableText = selected?.id ? canvas.querySelector(`[data-editor-id="${cssEscape(selected.id)}"][data-inline-text]`) : null;
+  if (!editableText) return;
+  editableText.focus();
+
+  const command = button.dataset.inlineCommand;
+  if (command === 'link') {
+    const href = window.prompt('URL do link');
+    if (!href) return;
+    document.execCommand('createLink', false, href);
+  } else {
+    document.execCommand(command, false, null);
+  }
+  updateInlineText(editableText, true);
+});
+
+inlineToolbar.addEventListener('change', (event) => {
+  const select = event.target.closest('[data-inline-heading]');
+  if (!select || !selected?.id) return;
+  const found = findEntity(selected.id);
+  if (!found?.entity || found.kind !== 'block' || found.entity.type !== 'text') return;
+  applyChange(() => {
+    found.entity.tag = select.value;
+  });
 });
 
 propertiesPanel.addEventListener('input', updateSelectedField);
@@ -209,12 +298,12 @@ function updateSelectedField(event) {
   if (!field || !selected) return;
   pushEditHistory();
 
-  const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
+  const value = readFieldValue(event.target);
   if (selected.kind === 'page') {
     setPageField(field, value);
   } else {
     const found = findEntity(selected.id);
-    if (!found?.entity || found.kind !== 'block') return;
+    if (!found?.entity) return;
     setFieldValue(found.entity, field, value);
   }
 
@@ -244,6 +333,7 @@ async function init() {
 }
 
 function render(updateProperties = true) {
+  inlineToolbar.hidden = true;
   canvas.style.cssText = pageStyle(draft);
   canvas.innerHTML = renderPageContent(draft, { editable: true, selectedId: selected?.id, menuPages, breakpoint: currentBreakpoint });
   if (updateProperties) renderProperties();
@@ -276,6 +366,20 @@ function renderProperties() {
   }
 
   if (found.kind !== 'block') {
+    if (found.kind === 'section') {
+      const section = found.entity;
+      propertiesPanel.innerHTML = `
+        <label><span>Fundo</span><input data-field="background" value="${escapeHtml(section.background || '')}" placeholder="#ffffff"></label>
+        ${paddingControls(section.padding)}
+      `;
+      return;
+    }
+
+    if (found.kind === 'column') {
+      propertiesPanel.innerHTML = paddingControls(found.entity.padding);
+      return;
+    }
+
     propertiesPanel.innerHTML = `<p class="editor-muted">${labelForKind(found.kind)} selecionado.</p>`;
     return;
   }
@@ -285,7 +389,7 @@ function renderProperties() {
   if (block.type === 'text') {
     propertiesPanel.innerHTML = `
       ${responsivePanel}
-      <label><span>Conteudo</span><textarea data-field="text">${escapeHtml(block.text || '')}</textarea></label>
+      <p class="editor-muted">Edite o conteudo diretamente no canvas.</p>
       <label><span>Cor</span><input data-field="color" value="${escapeHtml(block.color || '')}" placeholder="#1f2937"></label>
       <label><span>Tamanho da fonte</span><input data-field="fontSize" value="${escapeHtml(block.fontSize || '')}" placeholder="18px"></label>
       <label><span>Alinhamento</span>${alignSelect(block.align)}</label>
@@ -311,7 +415,7 @@ function renderProperties() {
       <label><span>Fundo</span><input data-field="background" value="${escapeHtml(block.background || '')}" placeholder="#ffffff"></label>
       <label><span>Borda</span><input data-field="border" value="${escapeHtml(block.border || '')}" placeholder="1px solid #d9e2ec"></label>
       <label><span>Raio da borda</span><input data-field="radius" value="${escapeHtml(block.radius || '')}" placeholder="12px"></label>
-      <label><span>Padding</span><input data-field="padding" value="${escapeHtml(block.padding || '')}" placeholder="24px"></label>
+      ${paddingControls(block.padding)}
     `;
     return;
   }
@@ -507,13 +611,13 @@ function newSection() {
   return {
     id: uid('section'),
     background: '',
-    padding: '56px 20px',
+    padding: { top: 56, bottom: 56, left: 20, right: 20 },
     rows: []
   };
 }
 
 function newBlock(type) {
-  if (type === 'container') return { id: uid('block'), type: 'container', background: '#ffffff', border: '1px solid #d9e2ec', radius: '12px', padding: '24px', blocks: [] };
+  if (type === 'container') return { id: uid('block'), type: 'container', background: '#ffffff', border: '1px solid #d9e2ec', radius: '12px', padding: { top: 24, bottom: 24, left: 24, right: 24 }, blocks: [] };
   if (type === 'image') return { id: uid('block'), type: 'image', url: '', alt: '', href: '', width: '100%', radius: '12px', align: 'left' };
   if (type === 'video') return { id: uid('block'), type: 'video', url: '', controls: true, autoplay: false };
   if (type === 'social') return { id: uid('block'), type: 'social', links: { instagram: '', facebook: '', whatsapp: '', linkedin: '' }, color: '#004477', size: '18px' };
@@ -570,6 +674,110 @@ function setFieldValue(block, field, value) {
     target = target[part];
   }
   target[parts[0]] = value;
+}
+
+function updateInlineText(editableText, sanitize) {
+  const block = findEntity(editableText.dataset.editorId)?.entity;
+  if (!block || block.type !== 'text') return;
+  pushEditHistory();
+  const html = sanitizeEditorHtml(editableText.innerHTML);
+  block.text = html;
+  if (sanitize) editableText.innerHTML = html;
+  scheduleSave();
+}
+
+function showInlineToolbar(editableText) {
+  const rect = selectionRect() || editableText.getBoundingClientRect();
+  const block = findEntity(editableText.dataset.editorId)?.entity;
+  const heading = inlineToolbar.querySelector('[data-inline-heading]');
+  if (heading && block?.tag) heading.value = ['h1', 'h2', 'h3', 'p'].includes(block.tag) ? block.tag : 'p';
+  inlineToolbar.hidden = false;
+  inlineToolbar.style.left = `${Math.max(12, rect.left + window.scrollX)}px`;
+  inlineToolbar.style.top = `${Math.max(12, rect.top + window.scrollY - inlineToolbar.offsetHeight - 10)}px`;
+}
+
+function selectionRect() {
+  const selection = document.getSelection();
+  if (!selection || !selection.rangeCount) return null;
+  const rect = selection.getRangeAt(0).getBoundingClientRect();
+  if (!rect.width && !rect.height) return null;
+  return rect;
+}
+
+function markSelectedElement(element) {
+  canvas.querySelectorAll('.is-selected').forEach((item) => item.classList.remove('is-selected'));
+  element.classList.add('is-selected');
+}
+
+function paddingControls(value) {
+  const padding = paddingObject(value);
+  return `
+    <fieldset class="editor-fieldset">
+      <legend>Padding (px)</legend>
+      <div class="editor-padding-grid">
+        <label><span>Topo</span><input type="number" min="0" step="1" data-field="padding.top" data-number-field value="${padding.top}"></label>
+        <label><span>Base</span><input type="number" min="0" step="1" data-field="padding.bottom" data-number-field value="${padding.bottom}"></label>
+        <label><span>Esquerda</span><input type="number" min="0" step="1" data-field="padding.left" data-number-field value="${padding.left}"></label>
+        <label><span>Direita</span><input type="number" min="0" step="1" data-field="padding.right" data-number-field value="${padding.right}"></label>
+      </div>
+    </fieldset>
+  `;
+}
+
+function paddingObject(value) {
+  if (value && typeof value === 'object') {
+    return {
+      top: numberOrZero(value.top),
+      bottom: numberOrZero(value.bottom),
+      left: numberOrZero(value.left),
+      right: numberOrZero(value.right)
+    };
+  }
+
+  const parts = String(value || '').match(/\d+(?:\.\d+)?/g)?.map(Number) || [];
+  if (parts.length === 1) return { top: parts[0], right: parts[0], bottom: parts[0], left: parts[0] };
+  if (parts.length === 2) return { top: parts[0], right: parts[1], bottom: parts[0], left: parts[1] };
+  if (parts.length === 3) return { top: parts[0], right: parts[1], bottom: parts[2], left: parts[1] };
+  if (parts.length >= 4) return { top: parts[0], right: parts[1], bottom: parts[2], left: parts[3] };
+  return { top: 0, bottom: 0, left: 0, right: 0 };
+}
+
+function readFieldValue(field) {
+  if (field.type === 'checkbox') return field.checked;
+  if (field.dataset.numberField !== undefined) return Math.max(0, Number(field.value) || 0);
+  return field.value;
+}
+
+function numberOrZero(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? Math.max(0, number) : 0;
+}
+
+function sanitizeEditorHtml(value) {
+  const template = document.createElement('template');
+  template.innerHTML = String(value || '');
+  const allowed = new Set(['A', 'B', 'BR', 'DIV', 'EM', 'H1', 'H2', 'H3', 'I', 'P', 'STRONG']);
+  const walk = (node) => {
+    for (const child of [...node.childNodes]) {
+      if (child.nodeType !== Node.ELEMENT_NODE) continue;
+      if (!allowed.has(child.tagName)) {
+        child.replaceWith(...child.childNodes);
+        continue;
+      }
+      for (const attribute of [...child.attributes]) {
+        if (child.tagName === 'A' && attribute.name === 'href') continue;
+        child.removeAttribute(attribute.name);
+      }
+      if (child.tagName === 'A') {
+        const href = child.getAttribute('href') || '#';
+        child.setAttribute('href', /^javascript:/i.test(href) ? '#' : href);
+        child.setAttribute('rel', 'noopener');
+      }
+      walk(child);
+    }
+  };
+  walk(template.content);
+  return template.innerHTML;
 }
 
 function orderedMenuPages(block) {
@@ -665,4 +873,9 @@ function escapeHtml(value) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+function cssEscape(value) {
+  if (window.CSS?.escape) return window.CSS.escape(value);
+  return String(value || '').replace(/["\\]/g, '\\$&');
 }

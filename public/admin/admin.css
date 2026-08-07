@@ -522,8 +522,18 @@ button.danger {
   margin-top: 10px;
 }
 
-.dynamic-image-placeholder,
+.editor-canvas .dynamic-image-placeholder {
+  cursor: pointer;
+  min-height: 180px;
+}
+
+.editor-canvas .dynamic-image-placeholder:hover {
+  background: #f0f6fb;
+  color: var(--admin-blue);
+}
+
 .dynamic-video-placeholder {
+  align-items: center;
   background: #f1f5f9;
   border: 1px dashed var(--admin-border);
   border-radius: 8px;
@@ -578,6 +588,63 @@ button.danger {
 .editor-properties-panel {
   display: grid;
   gap: 14px;
+}
+
+.editor-inline-toolbar {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.16);
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+  position: absolute;
+  z-index: 40;
+}
+
+.editor-inline-toolbar button,
+.editor-inline-toolbar select {
+  border: 1px solid var(--admin-border);
+  border-radius: 6px;
+  min-height: 30px;
+}
+
+.editor-inline-toolbar button {
+  background: #ffffff;
+  color: var(--admin-blue);
+  min-width: 34px;
+  padding: 4px 8px;
+}
+
+.editor-inline-toolbar select {
+  color: var(--admin-text);
+  padding: 4px 8px;
+}
+
+.editor-canvas [contenteditable="true"]:focus {
+  outline: 2px solid var(--admin-orange);
+  outline-offset: 3px;
+}
+
+.editor-fieldset {
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  margin: 0;
+  padding: 12px;
+}
+
+.editor-fieldset legend {
+  color: var(--admin-blue);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 0 6px;
+}
+
+.editor-padding-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .editor-responsive-panel {
