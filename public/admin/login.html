@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login | Admin FacilImob</title>
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
+    <link rel="stylesheet" href="/admin/admin.css">
+  </head>
+  <body class="admin-auth-body">
+    <main class="admin-auth-page">
+      <section class="admin-auth-card">
+        <img class="admin-auth-logo" src="/assets/logo-facilimob-horizontal-cropped.png" alt="FacilImob">
+        <h1>Painel FacilImob</h1>
+        <p>Acesse com o codigo de 6 digitos enviado para seu e-mail.</p>
+        <div id="status" class="admin-status" role="status"></div>
+
+        <form id="emailForm" class="admin-form">
+          <label>
+            <span>E-mail</span>
+            <input name="email" type="email" autocomplete="email" required>
+          </label>
+          <button type="submit">Enviar codigo</button>
+        </form>
+
+        <form id="codeForm" class="admin-form" hidden>
+          <p class="admin-sent-to" data-sent-to></p>
+          <label>
+            <span>Codigo de 6 digitos</span>
+            <input name="token" inputmode="numeric" autocomplete="one-time-code" maxlength="6" required>
+          </label>
+          <button type="submit">Entrar</button>
+          <button class="secondary" type="button" data-resend>Reenviar codigo</button>
+          <button class="link-button" type="button" data-change-email>Usar outro e-mail</button>
+        </form>
+      </section>
+    </main>
+    <script type="module" src="/admin/login.js"></script>
+  </body>
+</html>

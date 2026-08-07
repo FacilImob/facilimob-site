@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Paginas | Admin FacilImob</title>
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
+    <link rel="stylesheet" href="/admin/admin.css">
+  </head>
+  <body class="admin-app-body">
+    <header class="admin-topbar">
+      <a href="/admin/"><img src="/assets/logo-facilimob-horizontal-cropped.png" alt="FacilImob"></a>
+      <a class="admin-link" href="/admin/">Painel</a>
+    </header>
+    <main class="admin-page">
+      <div class="admin-page-header">
+        <div>
+          <h1>Paginas</h1>
+          <p>Crie, duplique e organize as paginas que serao editadas visualmente nas proximas etapas.</p>
+        </div>
+        <button type="button" data-open-create>Criar pagina</button>
+      </div>
+      <div id="status" class="admin-status" role="status"></div>
+      <section class="admin-panel">
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Titulo</th>
+                <th>Slug</th>
+                <th>Status</th>
+                <th>Ultima edicao</th>
+                <th>Home</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="pagesBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <dialog id="createDialog" class="admin-dialog">
+      <form method="dialog" id="createForm" class="admin-form">
+        <h2>Criar pagina</h2>
+        <label>
+          <span>Titulo</span>
+          <input name="title" required>
+        </label>
+        <label>
+          <span>Slug</span>
+          <input name="slug" required>
+        </label>
+        <div class="admin-dialog-actions">
+          <button class="secondary" type="button" data-close-create>Cancelar</button>
+          <button type="submit">Salvar</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script type="module" src="/admin/pages.js"></script>
+  </body>
+</html>

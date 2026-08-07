@@ -10,8 +10,8 @@ import configRoutes from './routes/config.js';
 import leadsRoutes from './routes/leads.js';
 import shareRoutes from './routes/share.js';
 import simulationsRoutes from './routes/simulations.js';
-import siteAdminRoutes from './routes/siteAdmin.js';
 import { pageAuth } from './middleware/auth.js';
+import { renderAdminPreviewPage, renderPublishedPage } from './sitePageRenderer.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -47,12 +47,14 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/config', configRoutes);
 app.use('/api/leads', leadsRoutes);
 app.use('/api/share', shareRoutes);
-app.use('/api/site-admin', siteAdminRoutes);
 app.use('/api/simulations', simulationsRoutes);
 
 app.get('/', (_req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
+
+app.get('/admin/preview/:id', renderAdminPreviewPage);
+app.get('/:slug', renderPublishedPage);
 
 app.use((_req, res) => {
   res.status(404).json({ error: 'Rota nao encontrada.' });

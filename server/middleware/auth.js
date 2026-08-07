@@ -1,5 +1,6 @@
 import { supabaseAnon } from '../supabaseAdmin.js';
 import { readAuthCookie } from '../authCookie.js';
+import { readAdminSessionCookie, renewAdminSessionCookie } from '../siteAdminSession.js';
 
 const protectedPages = new Set([
   '/simulador',
@@ -8,8 +9,6 @@ const protectedPages = new Set([
   '/historico.html',
   '/settings',
   '/settings.html',
-  '/site-admin',
-  '/site-admin.html',
   '/admin',
   '/admin.html'
 ]);
@@ -86,8 +85,12 @@ export async function requireAdmin(req, res, next) {
 }
 
 export function pageAuth(req, res, next) {
-  if (req.path === '/admin' || req.path === '/admin.html') {
+  if (req.path === '/admin.html') {
     return requireAdmin(req, res, next);
+  }
+
+  if (isSiteAdminPage(req.path)) {
+    return requireSiteAdminPage(req, res, next);
   }
 
   if (protectedPages.has(req.path)) {
@@ -108,4 +111,20 @@ function wantsHtml(req) {
 function normalizeRole(role) {
   if (role === 'admin') return 'admin';
   return 'editor';
+}
+
+function requireSiteAdminPage(req, res, next) {
+  const user = readAdminSessionCookie(req);
+
+  if (!user) {
+    return res.redirect('/admin/login.html');
+  }
+
+  renewAdminSessionCookie(res, user);
+  return next();
+}
+
+function isSiteAdminPage(path) {
+  if (path === '/admin/login.html' || path === '/admin/login.js' || path === '/admin/admin.css') return false;
+  return path === '/admin' || path.startsWith('/admin/');
 }

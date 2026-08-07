@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Editor | Admin FacilImob</title>
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
+    <link rel="stylesheet" href="/admin/admin.css">
+    <style id="dynamicStyles"></style>
+  </head>
+  <body class="admin-app-body editor-body">
+    <header class="admin-topbar editor-topbar">
+      <a href="/admin/pages.html"><img src="/assets/logo-facilimob-horizontal-cropped.png" alt="FacilImob"></a>
+      <div class="editor-top-actions">
+        <div class="editor-breakpoints" role="group" aria-label="Modo responsivo">
+          <button class="secondary compact active" type="button" data-breakpoint="desktop">Desktop</button>
+          <button class="secondary compact" type="button" data-breakpoint="tablet">Tablet</button>
+          <button class="secondary compact" type="button" data-breakpoint="mobile">Mobile</button>
+        </div>
+        <span id="saveStatus">Carregando...</span>
+        <button class="secondary compact" type="button" data-page-settings>Pagina</button>
+        <button class="secondary compact" type="button" data-preview>Preview</button>
+        <button class="compact" type="button" data-publish>Publicar</button>
+        <button class="secondary compact" type="button" data-undo>Desfazer</button>
+        <button class="secondary compact" type="button" data-redo>Refazer</button>
+        <a class="admin-link" href="/admin/pages.html">Paginas</a>
+      </div>
+    </header>
+
+    <main class="editor-shell">
+      <aside class="editor-sidebar">
+        <h2>Blocos</h2>
+        <button class="editor-palette-item" type="button" draggable="true" data-new-block="text">Texto</button>
+        <button class="editor-palette-item" type="button" draggable="true" data-new-block="button">Botao</button>
+        <button class="editor-palette-item" type="button" draggable="true" data-new-block="container">Container</button>
+        <button class="editor-palette-item" type="button" draggable="true" data-new-block="image">Imagem</button>
+        <button class="editor-palette-item" type="button" draggable="true" data-new-block="video">Video</button>
+        <button class="editor-palette-item" type="button" draggable="true" data-new-block="social">Redes sociais</button>
+        <button class="editor-palette-item" type="button" draggable="true" data-new-block="menu">Menu</button>
+        <button class="editor-palette-item" type="button" draggable="true" data-new-block="html">HTML</button>
+      </aside>
+
+      <section class="editor-stage">
+        <div class="editor-titlebar">
+          <div>
+            <h1 id="pageTitle">Editor</h1>
+            <p id="pageMeta"></p>
+          </div>
+        </div>
+        <div id="canvas" class="editor-canvas dynamic-page"></div>
+      </section>
+
+      <aside class="editor-properties">
+        <h2>Propriedades</h2>
+        <div id="propertiesPanel" class="editor-properties-panel">
+          <p class="editor-muted">Selecione uma seção, linha, coluna ou bloco.</p>
+        </div>
+      </aside>
+    </main>
+
+    <dialog id="rowDialog" class="admin-dialog">
+      <form method="dialog" class="admin-form">
+        <h2>Adicionar linha</h2>
+        <div class="editor-layout-grid">
+          <button type="button" data-layout="1">1 coluna</button>
+          <button type="button" data-layout="1,1">2 iguais</button>
+          <button type="button" data-layout="1,1,1">3 iguais</button>
+          <button type="button" data-layout="1,1,1,1">4 iguais</button>
+          <button type="button" data-layout="8,4">8 / 4</button>
+          <button type="button" data-layout="4,8">4 / 8</button>
+          <button type="button" data-layout="3,9">3 / 9</button>
+          <button type="button" data-layout="9,3">9 / 3</button>
+        </div>
+        <div class="admin-dialog-actions">
+          <button class="secondary" type="button" data-close-row>Cancelar</button>
+        </div>
+      </form>
+    </dialog>
+
+    <input id="imageUpload" type="file" accept="image/*" hidden>
+
+    <script type="module" src="/admin/editor.js"></script>
+  </body>
+</html>
