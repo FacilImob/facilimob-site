@@ -710,6 +710,72 @@ button.danger {
   outline-offset: 3px;
 }
 
+.editor-canvas .dynamic-row:hover > .editor-structure-chrome,
+.editor-canvas .dynamic-column:hover > .editor-structure-chrome,
+.editor-canvas .dynamic-row.is-selected > .editor-structure-chrome,
+.editor-canvas .dynamic-column.is-selected > .editor-structure-chrome {
+  display: flex;
+}
+
+.editor-structure-chrome {
+  align-items: center;
+  display: none;
+  gap: 8px;
+  left: 8px;
+  pointer-events: none;
+  position: absolute;
+  top: -18px;
+  z-index: 12;
+}
+
+.dynamic-column > .editor-structure-chrome {
+  left: 10px;
+  top: -14px;
+}
+
+.editor-structure-label {
+  background: var(--admin-blue);
+  border-radius: 999px;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  padding: 5px 8px;
+  text-transform: uppercase;
+}
+
+.editor-structure-toolbar {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.14);
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  pointer-events: auto;
+}
+
+.editor-structure-toolbar button {
+  background: #ffffff;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--admin-blue);
+  font-size: 11px;
+  min-height: 26px;
+  min-width: 28px;
+  padding: 4px 6px;
+}
+
+.editor-structure-toolbar button:hover {
+  background: #f0f6fb;
+  border-color: var(--admin-border);
+}
+
+.editor-structure-toolbar button[data-structure-action="delete"] {
+  color: var(--admin-error);
+}
+
 .editor-canvas .dynamic-column {
   border: 1px dashed rgba(0, 68, 119, 0.18);
   border-radius: 8px;
@@ -896,7 +962,7 @@ button.danger {
 
 .editor-layout-grid {
   display: grid;
-  gap: 10px;
+  gap: 12px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
@@ -904,6 +970,36 @@ button.danger {
   background: #ffffff;
   border-color: var(--admin-border);
   color: var(--admin-blue);
+  display: grid;
+  gap: 8px;
+  min-height: 78px;
+  padding: 10px;
+}
+
+.editor-layout-grid button:hover {
+  border-color: rgba(0, 68, 119, 0.35);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+}
+
+.editor-layout-grid small {
+  color: var(--admin-muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.editor-layout-preview {
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  display: flex;
+  gap: 4px;
+  min-height: 36px;
+  padding: 4px;
+}
+
+.editor-layout-preview span {
+  background: #f0f6fb;
+  border: 1px solid rgba(0, 68, 119, 0.14);
+  border-radius: 5px;
 }
 
 .editor-check {

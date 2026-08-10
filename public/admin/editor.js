@@ -23,6 +23,7 @@ let history = [];
 let future = [];
 let suppressHistory = false;
 let currentBreakpoint = 'desktop';
+const transientAlignment = new Map();
 
 document.querySelector('#dynamicStyles').textContent = dynamicPageStyles;
 inlineToolbar.className = 'editor-inline-toolbar';
@@ -81,6 +82,14 @@ rowDialog.addEventListener('click', (event) => {
 
 canvas.addEventListener('click', (event) => {
   if (event.target.closest('.dynamic-button')) event.preventDefault();
+
+  const structureButton = event.target.closest('[data-structure-action]');
+  if (structureButton) {
+    event.preventDefault();
+    event.stopPropagation();
+    handleStructureAction(structureButton);
+    return;
+  }
 
   const addSection = event.target.closest('[data-add-section]');
   if (addSection) {
@@ -394,11 +403,117 @@ function handleStructureDrop(event, structure) {
   });
 }
 
+function handleStructureAction(button) {
+  const action = button.dataset.structureAction;
+  const kind = button.dataset.structureKind;
+  const id = button.dataset.structureId;
+  if (!action || !kind || !id) return;
+
+  selected = { id, kind };
+
+  if (action === 'align-top' || action === 'align-bottom') {
+    transientAlignment.set(id, action === 'align-top' ? 'top' : 'bottom');
+    render();
+    return;
+  }
+
+  if (action === 'delete') {
+    deleteSelectedEntity();
+    return;
+  }
+
+  applyChange(() => {
+    if (action === 'duplicate') duplicateStructure(kind, id);
+    if (action === 'equalize') equalizeStructureColumns(kind, id);
+    if (action === 'move-left') moveColumn(id, 'left');
+    if (action === 'move-right') moveColumn(id, 'right');
+  });
+}
+
 function structureDropTarget(event, structure) {
   if (structure === 'section') return canvas;
   if (structure === 'row') return event.target.closest('[data-editor-kind="section"]') || canvas;
   if (structure === 'column') return event.target.closest('[data-editor-kind="row"], [data-editor-kind="section"]') || canvas;
   return null;
+}
+
+function duplicateStructure(kind, id) {
+  const parent = findStructureParent(kind, id);
+  if (!parent) return;
+
+  if (kind === 'row') {
+    const copy = cloneWithNewIds(parent.item);
+    parent.list.splice(parent.index + 1, 0, copy);
+    selected = { id: copy.id, kind: 'row' };
+    return;
+  }
+
+  if (kind === 'column') {
+    const copy = cloneWithNewIds(parent.item);
+    parent.list.splice(parent.index + 1, 0, copy);
+    selected = { id: copy.id, kind: 'column' };
+  }
+}
+
+function equalizeStructureColumns(kind, id) {
+  const row = kind === 'row' ? findEntity(id)?.entity : findParentRowOfColumn(id)?.row;
+  if (!row?.columns?.length) return;
+  const width = 12 / row.columns.length;
+  row.columns.forEach((column) => {
+    column.widthFraction = width;
+  });
+}
+
+function moveColumn(id, direction) {
+  const parent = findStructureParent('column', id);
+  if (!parent) return;
+  const nextIndex = direction === 'left' ? parent.index - 1 : parent.index + 1;
+  if (nextIndex < 0 || nextIndex >= parent.list.length) return;
+  const [column] = parent.list.splice(parent.index, 1);
+  parent.list.splice(nextIndex, 0, column);
+  selected = { id, kind: 'column' };
+}
+
+function applyTransientAlignment() {
+  transientAlignment.forEach((alignment, id) => {
+    const element = canvas.querySelector(`[data-editor-id="${cssEscape(id)}"]`);
+    if (!element) return;
+    if (element.dataset.editorKind === 'row') {
+      element.style.alignItems = alignment === 'bottom' ? 'flex-end' : 'flex-start';
+    }
+    if (element.dataset.editorKind === 'column') {
+      element.style.display = 'flex';
+      element.style.flexDirection = 'column';
+      element.style.justifyContent = alignment === 'bottom' ? 'flex-end' : 'flex-start';
+    }
+  });
+}
+
+function findStructureParent(kind, id) {
+  if (kind === 'row') {
+    for (const section of draft.sections || []) {
+      const rows = Array.isArray(section.rows) ? section.rows : [];
+      const index = rows.findIndex((row) => row.id === id);
+      if (index >= 0) return { list: rows, index, item: rows[index], parent: section };
+    }
+  }
+
+  if (kind === 'column') {
+    for (const section of draft.sections || []) {
+      for (const row of section.rows || []) {
+        const columns = Array.isArray(row.columns) ? row.columns : [];
+        const index = columns.findIndex((column) => column.id === id);
+        if (index >= 0) return { list: columns, index, item: columns[index], parent: row };
+      }
+    }
+  }
+
+  return null;
+}
+
+function findParentRowOfColumn(id) {
+  const parent = findStructureParent('column', id);
+  return parent ? { row: parent.parent, index: parent.index } : null;
 }
 
 async function init() {
@@ -427,6 +542,7 @@ function render(updateProperties = true) {
   inlineToolbar.hidden = true;
   canvas.style.cssText = pageStyle(draft);
   canvas.innerHTML = renderPageContent(draft, { editable: true, selectedId: selected?.id, menuPages, breakpoint: currentBreakpoint });
+  applyTransientAlignment();
   if (updateProperties) renderProperties();
 }
 
@@ -1076,6 +1192,25 @@ function uid(prefix) {
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
+}
+
+function cloneWithNewIds(value) {
+  const copy = clone(value);
+  refreshIds(copy);
+  return copy;
+}
+
+function refreshIds(entity) {
+  if (!entity || typeof entity !== 'object') return;
+
+  if (entity.id) {
+    const prefix = String(entity.id).split('_')[0] || 'item';
+    entity.id = uid(prefix);
+  }
+
+  for (const row of entity.rows || []) refreshIds(row);
+  for (const column of entity.columns || []) refreshIds(column);
+  for (const block of entity.blocks || []) refreshIds(block);
 }
 
 function escapeHtml(value) {

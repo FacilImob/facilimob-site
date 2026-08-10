@@ -1,8 +1,8 @@
 export const dynamicPageStyles = `
   .dynamic-page { color: #1f2937; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
   .dynamic-section { background: var(--section-bg, transparent); padding: var(--section-padding, 56px 20px); position: relative; }
-  .dynamic-row { display: flex; gap: 24px; margin: 0 auto; max-width: var(--page-width, 1120px); width: 100%; }
-  .dynamic-column { flex: var(--column-width, 1 1 0); min-width: 0; padding: var(--column-padding, 0); }
+  .dynamic-row { display: flex; gap: 24px; margin: 0 auto; max-width: var(--page-width, 1120px); position: relative; width: 100%; }
+  .dynamic-column { flex: var(--column-width, 1 1 0); min-width: 0; padding: var(--column-padding, 0); position: relative; }
   .dynamic-text { color: var(--block-color, inherit); font-size: var(--block-font-size, inherit); line-height: 1.65; margin: 0 0 18px; text-align: var(--block-align, left); }
   .dynamic-button-wrap { margin: 0 0 18px; text-align: var(--block-align, left); }
   .dynamic-button { background: var(--button-bg, #f4770b); border-radius: 8px; color: #fff; display: inline-flex; font-size: var(--block-font-size, inherit); font-weight: 700; padding: 12px 18px; text-decoration: none; }
@@ -61,7 +61,8 @@ function renderSection(section, options) {
 function renderRow(row, options) {
   const columns = Array.isArray(row?.columns) ? row.columns : [];
   const attrs = editableAttrs('row', row?.id, options);
-  return `<div class="dynamic-row${selectedClass(row?.id, options)}"${attrs}>${columns.map((column) => renderColumn(column, options)).join('')}</div>`;
+  const chrome = options.editable ? renderStructureToolbar('row', row?.id) : '';
+  return `<div class="dynamic-row${selectedClass(row?.id, options)}"${attrs}>${chrome}${columns.map((column) => renderColumn(column, options)).join('')}</div>`;
 }
 
 function renderColumn(column, options) {
@@ -74,7 +75,8 @@ function renderColumn(column, options) {
     padding ? `--column-padding:${padding}` : ''
   ].filter(Boolean).join(';');
   const attrs = editableAttrs('column', column?.id, options, ` data-drop-column="${escapeHtml(column?.id || '')}"`);
-  return `<div class="dynamic-column${selectedClass(column?.id, options)}"${attrs}${style ? ` style="${escapeHtml(style)}"` : ''}>${blocks.map((block) => renderBlock(block, options)).join('')}${options.editable ? '<div class="editor-drop-hint">Solte blocos aqui</div>' : ''}</div>`;
+  const chrome = options.editable ? renderStructureToolbar('column', column?.id) : '';
+  return `<div class="dynamic-column${selectedClass(column?.id, options)}"${attrs}${style ? ` style="${escapeHtml(style)}"` : ''}>${chrome}${blocks.map((block) => renderBlock(block, options)).join('')}${options.editable ? '<div class="editor-drop-hint">Solte blocos aqui</div>' : ''}</div>`;
 }
 
 function renderBlock(block, options) {
@@ -192,6 +194,26 @@ function renderHtmlBlock(block, options) {
 
 function renderAddSectionButton(index) {
   return `<div class="editor-add-section"><button type="button" data-add-section="${index}">+ Adicionar secao</button></div>`;
+}
+
+function renderStructureToolbar(kind, id) {
+  const safeKind = escapeHtml(kind);
+  const safeId = escapeHtml(id || '');
+  const label = kind === 'row' ? 'linha' : 'coluna';
+  return `
+    <div class="editor-structure-chrome" data-structure-chrome="${safeKind}" data-structure-id="${safeId}">
+      <span class="editor-structure-label">${label}</span>
+      <div class="editor-structure-toolbar" aria-label="Ferramentas de ${label}">
+        <button type="button" data-structure-action="duplicate" data-structure-kind="${safeKind}" data-structure-id="${safeId}" title="Duplicar" aria-label="Duplicar">Dup</button>
+        <button type="button" data-structure-action="align-top" data-structure-kind="${safeKind}" data-structure-id="${safeId}" title="Alinhar ao topo" aria-label="Alinhar ao topo">Top</button>
+        <button type="button" data-structure-action="equalize" data-structure-kind="${safeKind}" data-structure-id="${safeId}" title="Redistribuir colunas" aria-label="Redistribuir colunas">=</button>
+        <button type="button" data-structure-action="align-bottom" data-structure-kind="${safeKind}" data-structure-id="${safeId}" title="Alinhar a base" aria-label="Alinhar a base">Base</button>
+        <button type="button" data-structure-action="move-left" data-structure-kind="${safeKind}" data-structure-id="${safeId}" title="Mover coluna para a esquerda" aria-label="Mover coluna para a esquerda">&lt;</button>
+        <button type="button" data-structure-action="move-right" data-structure-kind="${safeKind}" data-structure-id="${safeId}" title="Mover coluna para a direita" aria-label="Mover coluna para a direita">&gt;</button>
+        <button type="button" data-structure-action="delete" data-structure-kind="${safeKind}" data-structure-id="${safeId}" title="Excluir" aria-label="Excluir">X</button>
+      </div>
+    </div>
+  `;
 }
 
 function editableAttrs(kind, id, options, extra = '') {

@@ -129,14 +129,38 @@
       <form method="dialog" class="admin-form">
         <h2>Adicionar linha</h2>
         <div class="editor-layout-grid">
-          <button type="button" data-layout="1">1 coluna</button>
-          <button type="button" data-layout="1,1">2 iguais</button>
-          <button type="button" data-layout="1,1,1">3 iguais</button>
-          <button type="button" data-layout="1,1,1,1">4 iguais</button>
-          <button type="button" data-layout="8,4">8 / 4</button>
-          <button type="button" data-layout="4,8">4 / 8</button>
-          <button type="button" data-layout="3,9">3 / 9</button>
-          <button type="button" data-layout="9,3">9 / 3</button>
+          <button type="button" data-layout="1" title="1 coluna" aria-label="1 coluna">
+            <span class="editor-layout-preview"><span style="flex:1"></span></span>
+            <small>1 coluna</small>
+          </button>
+          <button type="button" data-layout="1,1" title="2 iguais" aria-label="2 iguais">
+            <span class="editor-layout-preview"><span style="flex:1"></span><span style="flex:1"></span></span>
+            <small>2 iguais</small>
+          </button>
+          <button type="button" data-layout="1,1,1" title="3 iguais" aria-label="3 iguais">
+            <span class="editor-layout-preview"><span style="flex:1"></span><span style="flex:1"></span><span style="flex:1"></span></span>
+            <small>3 iguais</small>
+          </button>
+          <button type="button" data-layout="1,1,1,1" title="4 iguais" aria-label="4 iguais">
+            <span class="editor-layout-preview"><span style="flex:1"></span><span style="flex:1"></span><span style="flex:1"></span><span style="flex:1"></span></span>
+            <small>4 iguais</small>
+          </button>
+          <button type="button" data-layout="8,4" title="8 / 4" aria-label="8 / 4">
+            <span class="editor-layout-preview"><span style="flex:8"></span><span style="flex:4"></span></span>
+            <small>8 / 4</small>
+          </button>
+          <button type="button" data-layout="4,8" title="4 / 8" aria-label="4 / 8">
+            <span class="editor-layout-preview"><span style="flex:4"></span><span style="flex:8"></span></span>
+            <small>4 / 8</small>
+          </button>
+          <button type="button" data-layout="3,9" title="3 / 9" aria-label="3 / 9">
+            <span class="editor-layout-preview"><span style="flex:3"></span><span style="flex:9"></span></span>
+            <small>3 / 9</small>
+          </button>
+          <button type="button" data-layout="9,3" title="9 / 3" aria-label="9 / 3">
+            <span class="editor-layout-preview"><span style="flex:9"></span><span style="flex:3"></span></span>
+            <small>9 / 3</small>
+          </button>
         </div>
         <div class="admin-dialog-actions">
           <button class="secondary" type="button" data-close-row>Cancelar</button>
