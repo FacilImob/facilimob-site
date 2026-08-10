@@ -151,6 +151,9 @@ button.link-button {
 
 .admin-form select,
 .admin-form textarea,
+.editor-page-panel input,
+.editor-page-panel select,
+.editor-page-panel textarea,
 .editor-properties-panel input,
 .editor-properties-panel select,
 .editor-properties-panel textarea {
@@ -162,6 +165,7 @@ button.link-button {
 }
 
 .admin-form textarea,
+.editor-page-panel textarea,
 .editor-properties-panel textarea {
   min-height: 120px;
   resize: vertical;
@@ -560,6 +564,29 @@ button.danger {
   display: grid;
   gap: 12px;
   padding-right: 2px;
+}
+
+.editor-page-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.editor-page-panel[hidden] {
+  display: none !important;
+}
+
+.editor-page-panel label {
+  background: #ffffff;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  display: grid;
+  gap: 7px;
+  padding: 12px;
+}
+
+.editor-page-panel span {
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .editor-palette-item {

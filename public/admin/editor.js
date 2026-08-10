@@ -8,6 +8,8 @@ const pageTitle = document.querySelector('#pageTitle');
 const pageMeta = document.querySelector('#pageMeta');
 const rowDialog = document.querySelector('#rowDialog');
 const imageUpload = document.querySelector('#imageUpload');
+const sidebarPanels = document.querySelectorAll('[data-sidebar-panel]');
+const sidebarTabs = document.querySelectorAll('[data-sidebar-tab]');
 const inlineToolbar = document.createElement('div');
 
 let page = null;
@@ -44,10 +46,10 @@ document.querySelector('[data-undo]').addEventListener('click', undo);
 document.querySelector('[data-redo]').addEventListener('click', redo);
 document.querySelector('[data-close-row]').addEventListener('click', () => rowDialog.close());
 document.querySelectorAll('[data-page-settings]').forEach((button) => {
-  button.addEventListener('click', () => {
-    selected = { id: 'page', kind: 'page' };
-    render();
-  });
+  button.addEventListener('click', () => showSidebarPanel('page'));
+});
+sidebarTabs.forEach((button) => {
+  button.addEventListener('click', () => showSidebarPanel(button.dataset.sidebarTab));
 });
 document.querySelector('[data-preview]').addEventListener('click', () => {
   window.open(`/admin/preview/${pageId}`, '_blank', 'noopener');
@@ -72,10 +74,7 @@ rowDialog.addEventListener('click', (event) => {
     const section = findEntity(rowTargetSectionId)?.entity;
     if (!section) return;
     section.rows = Array.isArray(section.rows) ? section.rows : [];
-    section.rows.push({
-      id: uid('row'),
-      columns: widths.map((width) => ({ id: uid('column'), widthFraction: width, blocks: [] }))
-    });
+    section.rows.push(newRow(widths));
   });
   rowDialog.close();
 });
@@ -149,15 +148,26 @@ canvas.addEventListener('dragstart', (event) => {
 });
 
 canvas.addEventListener('dragover', (event) => {
+  const payload = readDragPayload(event);
+  if (payload.newStructure && structureDropTarget(event, payload.newStructure)) {
+    event.preventDefault();
+    return;
+  }
   if (event.target.closest('[data-drop-column], [data-drop-container]')) event.preventDefault();
 });
 
 canvas.addEventListener('drop', (event) => {
+  const payload = readDragPayload(event);
+  if (payload.newStructure) {
+    event.preventDefault();
+    handleStructureDrop(event, payload.newStructure);
+    return;
+  }
+
   const dropTarget = event.target.closest('[data-drop-column], [data-drop-container]');
   if (!dropTarget) return;
   event.preventDefault();
   const targetId = dropTarget.dataset.dropColumn || dropTarget.dataset.dropContainer;
-  const payload = readDragPayload(event);
 
   applyChange(() => {
     const target = findEntity(targetId)?.entity;
@@ -183,6 +193,13 @@ canvas.addEventListener('drop', (event) => {
 });
 
 document.addEventListener('dragstart', (event) => {
+  const structure = event.target.closest('[data-new-structure]');
+  if (structure) {
+    event.dataTransfer.setData('text/plain', JSON.stringify({ newStructure: structure.dataset.newStructure }));
+    event.dataTransfer.effectAllowed = 'copy';
+    return;
+  }
+
   const palette = event.target.closest('[data-new-block]');
   if (!palette) return;
   event.dataTransfer.setData('text/plain', JSON.stringify({ newBlockType: palette.dataset.newBlock }));
@@ -234,6 +251,8 @@ inlineToolbar.addEventListener('change', (event) => {
 
 propertiesPanel.addEventListener('input', updateSelectedField);
 propertiesPanel.addEventListener('change', updateSelectedField);
+document.querySelector('[data-sidebar-panel="page"]').addEventListener('input', updatePageSettingsField);
+document.querySelector('[data-sidebar-panel="page"]').addEventListener('change', updatePageSettingsField);
 propertiesPanel.addEventListener('click', async (event) => {
   const uploadButton = event.target.closest('[data-upload-image]');
   if (uploadButton) {
@@ -313,6 +332,69 @@ function updateSelectedField(event) {
   scheduleSave();
 }
 
+function updatePageSettingsField(event) {
+  const field = event.target.dataset.pageField;
+  if (!field) return;
+  pushEditHistory();
+  setPageField(field, readFieldValue(event.target));
+  render(false);
+  scheduleSave();
+}
+
+function showSidebarPanel(name) {
+  sidebarTabs.forEach((button) => button.classList.toggle('active', button.dataset.sidebarTab === name));
+  sidebarPanels.forEach((panel) => {
+    panel.hidden = panel.dataset.sidebarPanel !== name;
+  });
+  if (name === 'page') renderPageSettingsPanel();
+}
+
+function renderPageSettingsPanel() {
+  const panel = document.querySelector('[data-sidebar-panel="page"]');
+  if (!panel) return;
+  const width = panel.querySelector('[data-page-field="pageWidth"]');
+  const seoTitle = panel.querySelector('[data-page-field="seo_title"]');
+  const seoDescription = panel.querySelector('[data-page-field="seo_description"]');
+  if (width) width.value = draft.pageWidth || '1140px';
+  if (seoTitle) seoTitle.value = page?.seo_title || '';
+  if (seoDescription) seoDescription.value = page?.seo_description || '';
+}
+
+function handleStructureDrop(event, structure) {
+  applyChange(() => {
+    if (structure === 'section') {
+      const section = newSection();
+      draft.sections.push(section);
+      selected = { id: section.id, kind: 'section' };
+      return;
+    }
+
+    if (structure === 'row') {
+      const section = nearestSection(event) || ensureLastSection();
+      section.rows = Array.isArray(section.rows) ? section.rows : [];
+      const row = newRow([1]);
+      section.rows.push(row);
+      selected = { id: row.id, kind: 'row' };
+      return;
+    }
+
+    if (structure === 'column') {
+      const row = nearestRow(event) || ensureLastRow();
+      row.columns = Array.isArray(row.columns) ? row.columns : [];
+      const column = newColumn(1);
+      row.columns.push(column);
+      selected = { id: column.id, kind: 'column' };
+    }
+  });
+}
+
+function structureDropTarget(event, structure) {
+  if (structure === 'section') return canvas;
+  if (structure === 'row') return event.target.closest('[data-editor-kind="section"]') || canvas;
+  if (structure === 'column') return event.target.closest('[data-editor-kind="row"], [data-editor-kind="section"]') || canvas;
+  return null;
+}
+
 async function init() {
   if (!pageId) {
     saveStatus.textContent = 'Pagina nao informada';
@@ -327,6 +409,7 @@ async function init() {
     draft = normalizePageJson(page.draft_json);
     pageTitle.textContent = page.title;
     pageMeta.textContent = `/${page.slug}`;
+    renderPageSettingsPanel();
     saveStatus.textContent = 'Salvo';
     render();
   } catch (error) {
@@ -348,15 +431,8 @@ function renderProperties() {
   }
 
   if (selected.kind === 'page') {
-    propertiesPanel.innerHTML = `
-      <label><span>Largura da pagina</span>
-        <select data-field="pageWidth">
-          ${['1140px', '1280px', 'full-width'].map((value) => `<option value="${value}"${(draft.pageWidth || '1140px') === value ? ' selected' : ''}>${value}</option>`).join('')}
-        </select>
-      </label>
-      <label><span>SEO title</span><input data-field="seo_title" value="${escapeHtml(page?.seo_title || '')}"></label>
-      <label><span>SEO description</span><textarea data-field="seo_description">${escapeHtml(page?.seo_description || '')}</textarea></label>
-    `;
+    selected = null;
+    renderProperties();
     return;
   }
 
@@ -618,6 +694,21 @@ function newSection() {
   };
 }
 
+function newRow(widths = [1]) {
+  return {
+    id: uid('row'),
+    columns: widths.map((width) => newColumn(width))
+  };
+}
+
+function newColumn(width = 1) {
+  return {
+    id: uid('column'),
+    widthFraction: width,
+    blocks: []
+  };
+}
+
 function newBlock(type) {
   if (type === 'container') return { id: uid('block'), type: 'container', background: '#ffffff', border: '1px solid #d9e2ec', radius: '12px', padding: { top: 24, bottom: 24, left: 24, right: 24 }, blocks: [] };
   if (type === 'image') return { id: uid('block'), type: 'image', url: '', alt: '', href: '', width: '100%', radius: '12px', align: 'left' };
@@ -627,6 +718,29 @@ function newBlock(type) {
   if (type === 'html') return { id: uid('block'), type: 'html', code: '<div>HTML livre</div>', height: '180px' };
   if (type === 'button') return { id: uid('block'), type: 'button', label: 'Saiba mais', href: '#', color: '#f4770b', align: 'left' };
   return { id: uid('block'), type: 'text', text: 'Novo texto', color: '#1f2937', align: 'left', tag: 'p' };
+}
+
+function nearestSection(event) {
+  const element = event.target.closest('[data-editor-kind="section"]');
+  return element ? findEntity(element.dataset.editorId)?.entity : null;
+}
+
+function nearestRow(event) {
+  const element = event.target.closest('[data-editor-kind="row"]');
+  return element ? findEntity(element.dataset.editorId)?.entity : null;
+}
+
+function ensureLastSection() {
+  draft.sections = Array.isArray(draft.sections) ? draft.sections : [];
+  if (!draft.sections.length) draft.sections.push(newSection());
+  return draft.sections[draft.sections.length - 1];
+}
+
+function ensureLastRow() {
+  const section = ensureLastSection();
+  section.rows = Array.isArray(section.rows) ? section.rows : [];
+  if (!section.rows.length) section.rows.push(newRow([1]));
+  return section.rows[section.rows.length - 1];
 }
 
 function findBlockInList(blocks, id) {
