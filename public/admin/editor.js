@@ -43,9 +43,11 @@ init();
 document.querySelector('[data-undo]').addEventListener('click', undo);
 document.querySelector('[data-redo]').addEventListener('click', redo);
 document.querySelector('[data-close-row]').addEventListener('click', () => rowDialog.close());
-document.querySelector('[data-page-settings]').addEventListener('click', () => {
-  selected = { id: 'page', kind: 'page' };
-  render();
+document.querySelectorAll('[data-page-settings]').forEach((button) => {
+  button.addEventListener('click', () => {
+    selected = { id: 'page', kind: 'page' };
+    render();
+  });
 });
 document.querySelector('[data-preview]').addEventListener('click', () => {
   window.open(`/admin/preview/${pageId}`, '_blank', 'noopener');

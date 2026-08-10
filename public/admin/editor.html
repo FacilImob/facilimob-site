@@ -10,7 +10,13 @@
   </head>
   <body class="admin-app-body editor-body">
     <header class="admin-topbar editor-topbar">
-      <a href="/admin/pages.html"><img src="/assets/logo-facilimob-horizontal-cropped.png" alt="FacilImob"></a>
+      <div class="editor-page-heading">
+        <a href="/admin/pages.html"><img src="/assets/logo-facilimob-horizontal-cropped.png" alt="FacilImob"></a>
+        <div>
+          <h1 id="pageTitle">Editor</h1>
+          <p id="pageMeta"></p>
+        </div>
+      </div>
       <div class="editor-top-actions">
         <div class="editor-breakpoints" role="group" aria-label="Modo responsivo">
           <button class="secondary compact active" type="button" data-breakpoint="desktop">Desktop</button>
@@ -29,24 +35,71 @@
 
     <main class="editor-shell">
       <aside class="editor-sidebar">
-        <h2>Blocos</h2>
-        <button class="editor-palette-item" type="button" draggable="true" data-new-block="text">Texto</button>
-        <button class="editor-palette-item" type="button" draggable="true" data-new-block="button">Botao</button>
-        <button class="editor-palette-item" type="button" draggable="true" data-new-block="container">Container</button>
-        <button class="editor-palette-item" type="button" draggable="true" data-new-block="image">Imagem</button>
-        <button class="editor-palette-item" type="button" draggable="true" data-new-block="video">Video</button>
-        <button class="editor-palette-item" type="button" draggable="true" data-new-block="social">Redes sociais</button>
-        <button class="editor-palette-item" type="button" draggable="true" data-new-block="menu">Menu</button>
-        <button class="editor-palette-item" type="button" draggable="true" data-new-block="html">HTML</button>
+        <div class="editor-sidebar-tabs" role="tablist" aria-label="Editor">
+          <button class="active" type="button">Componentes</button>
+          <button type="button" data-page-settings>Pagina</button>
+        </div>
+        <p class="editor-sidebar-help">Escolha o componente que deseja adicionar e arraste ate a area da direita.</p>
+        <div class="editor-component-list" aria-label="Componentes">
+          <div class="editor-palette-item editor-palette-muted" aria-disabled="true">
+            <span class="editor-component-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 18h16M6 8v8h12V8"/></svg></span>
+            <span>Secao</span>
+            <span class="editor-drag-handle" aria-hidden="true"></span>
+          </div>
+          <div class="editor-palette-item editor-palette-muted" aria-disabled="true">
+            <span class="editor-component-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 8h16v8H4zM12 8v8"/></svg></span>
+            <span>Linha</span>
+            <span class="editor-drag-handle" aria-hidden="true"></span>
+          </div>
+          <div class="editor-palette-item editor-palette-muted" aria-disabled="true">
+            <span class="editor-component-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 5h5v14H5zM14 5h5v14h-5z"/></svg></span>
+            <span>Coluna</span>
+            <span class="editor-drag-handle" aria-hidden="true"></span>
+          </div>
+          <button class="editor-palette-item" type="button" draggable="true" data-new-block="container">
+            <span class="editor-component-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 5h14v14H5zM8 9h8M8 13h5"/></svg></span>
+            <span>Container/Caixa</span>
+            <span class="editor-drag-handle" aria-hidden="true"></span>
+          </button>
+          <button class="editor-palette-item" type="button" draggable="true" data-new-block="text">
+            <span class="editor-component-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 6h14M8 6v12M5 18h6"/></svg></span>
+            <span>Texto</span>
+            <span class="editor-drag-handle" aria-hidden="true"></span>
+          </button>
+          <button class="editor-palette-item" type="button" draggable="true" data-new-block="button">
+            <span class="editor-component-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 8h14v8H5zM9 12h6"/></svg></span>
+            <span>Botao</span>
+            <span class="editor-drag-handle" aria-hidden="true"></span>
+          </button>
+          <button class="editor-palette-item" type="button" draggable="true" data-new-block="image">
+            <span class="editor-component-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 5h14v14H5zM8 15l3-3 2 2 2-3 3 4M9 9h.01"/></svg></span>
+            <span>Imagem</span>
+            <span class="editor-drag-handle" aria-hidden="true"></span>
+          </button>
+          <button class="editor-palette-item" type="button" draggable="true" data-new-block="video">
+            <span class="editor-component-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 6h14v12H5zM10 9l5 3-5 3z"/></svg></span>
+            <span>Video</span>
+            <span class="editor-drag-handle" aria-hidden="true"></span>
+          </button>
+          <button class="editor-palette-item" type="button" draggable="true" data-new-block="social">
+            <span class="editor-component-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM16 18a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM10.5 10.5l3 3"/></svg></span>
+            <span>Redes Sociais</span>
+            <span class="editor-drag-handle" aria-hidden="true"></span>
+          </button>
+          <button class="editor-palette-item" type="button" draggable="true" data-new-block="menu">
+            <span class="editor-component-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 7h14M5 12h14M5 17h14"/></svg></span>
+            <span>Menu</span>
+            <span class="editor-drag-handle" aria-hidden="true"></span>
+          </button>
+          <button class="editor-palette-item" type="button" draggable="true" data-new-block="html">
+            <span class="editor-component-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 8l-4 4 4 4M15 8l4 4-4 4"/></svg></span>
+            <span>HTML</span>
+            <span class="editor-drag-handle" aria-hidden="true"></span>
+          </button>
+        </div>
       </aside>
 
       <section class="editor-stage">
-        <div class="editor-titlebar">
-          <div>
-            <h1 id="pageTitle">Editor</h1>
-            <p id="pageMeta"></p>
-          </div>
-        </div>
         <div id="canvas" class="editor-canvas dynamic-page"></div>
       </section>
 
