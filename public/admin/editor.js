@@ -12,6 +12,7 @@ const imageUpload = document.querySelector('#imageUpload');
 const sidebarPanels = document.querySelectorAll('[data-sidebar-panel]');
 const sidebarTabs = document.querySelectorAll('[data-sidebar-tab]');
 const inlineToolbar = document.createElement('div');
+const colorPopover = document.createElement('div');
 
 let page = null;
 let draft = { pageWidth: '1140px', sections: [] };
@@ -25,6 +26,7 @@ let future = [];
 let suppressHistory = false;
 let currentBreakpoint = 'desktop';
 let columnResize = null;
+let activeColorField = '';
 const transientAlignment = new Map();
 const COLUMN_RESIZE_MIN_RATIO = 0.1;
 const COLUMN_RESIZE_STEP = 0.5;
@@ -44,6 +46,19 @@ inlineToolbar.innerHTML = `
   </select>
 `;
 document.body.append(inlineToolbar);
+colorPopover.className = 'editor-color-popover';
+colorPopover.hidden = true;
+colorPopover.innerHTML = `
+  <div class="editor-color-picker-wrap">
+    <input type="color" data-color-picker aria-label="Selecionar cor">
+  </div>
+  <label><span>HEX</span><input data-color-hex placeholder="#000000"></label>
+  <div class="editor-used-colors">
+    <span>Cores utilizadas</span>
+    <div data-used-colors></div>
+  </div>
+`;
+document.body.append(colorPopover);
 
 init();
 
@@ -276,6 +291,21 @@ propertiesPanel.addEventListener('change', updateSelectedField);
 document.querySelector('[data-sidebar-panel="page"]').addEventListener('input', updatePageSettingsField);
 document.querySelector('[data-sidebar-panel="page"]').addEventListener('change', updatePageSettingsField);
 propertiesPanel.addEventListener('click', async (event) => {
+  const openColor = event.target.closest('[data-open-color-field]');
+  if (openColor) {
+    event.preventDefault();
+    openColorPopover(openColor);
+    return;
+  }
+
+  const clearColor = event.target.closest('[data-clear-color-field]');
+  if (clearColor) {
+    event.preventDefault();
+    updateColorValue(clearColor.dataset.clearColorField, '');
+    hideColorPopover();
+    return;
+  }
+
   const deleteButton = event.target.closest('[data-delete-selected]');
   if (deleteButton) {
     deleteSelectedEntity();
@@ -320,6 +350,30 @@ propertiesPanel.addEventListener('click', async (event) => {
   }
 });
 
+colorPopover.addEventListener('input', (event) => {
+  const picker = event.target.closest('[data-color-picker]');
+  const hex = event.target.closest('[data-color-hex]');
+  if (!activeColorField || (!picker && !hex)) return;
+  const value = normalizeHexColor(event.target.value);
+  if (!value) return;
+  syncColorPopover(value);
+  updateColorValue(activeColorField, value);
+});
+
+colorPopover.addEventListener('click', (event) => {
+  const swatch = event.target.closest('[data-used-color]');
+  if (!swatch || !activeColorField) return;
+  const value = swatch.dataset.usedColor;
+  syncColorPopover(value);
+  updateColorValue(activeColorField, value);
+});
+
+document.addEventListener('mousedown', (event) => {
+  if (colorPopover.hidden) return;
+  if (colorPopover.contains(event.target) || event.target.closest('[data-open-color-field]')) return;
+  hideColorPopover();
+});
+
 imageUpload.addEventListener('change', async () => {
   const file = imageUpload.files?.[0];
   const block = findEntity(selected?.id)?.entity;
@@ -348,6 +402,10 @@ function updateSelectedField(event) {
   pushEditHistory();
 
   const value = readFieldValue(event.target);
+  if ((field === 'color' || field === 'background') && event.target.closest('.editor-color-field')) {
+    const swatch = event.target.closest('.editor-color-field').querySelector('[data-open-color-field]');
+    if (swatch) swatch.style.setProperty('--color-swatch', normalizeHexColor(value) || '#ffffff');
+  }
   if (selected.kind === 'page') {
     setPageField(field, value);
   } else {
@@ -716,7 +774,7 @@ function renderProperties() {
     propertiesPanel.innerHTML = `
       ${responsivePanel}
       <p class="editor-muted">Edite o conteudo diretamente no canvas.</p>
-      <label><span>Cor</span><input data-field="color" value="${escapeHtml(block.color || '')}" placeholder="#1f2937"></label>
+      ${colorField('Cor', 'color', block.color || '', '#1f2937')}
       <label><span>Tamanho da fonte</span><input data-field="fontSize" value="${escapeHtml(block.fontSize || '')}" placeholder="18px"></label>
       <label><span>Alinhamento</span>${alignSelect(block.align)}</label>
       ${deleteAction('texto')}
@@ -729,7 +787,7 @@ function renderProperties() {
       ${responsivePanel}
       <label><span>Texto</span><input data-field="label" value="${escapeHtml(block.label || '')}"></label>
       <label><span>Link</span><input data-field="href" value="${escapeHtml(block.href || '')}" placeholder="https://..."></label>
-      <label><span>Cor</span><input data-field="color" value="${escapeHtml(block.color || '')}" placeholder="#f4770b"></label>
+      ${colorField('Cor', 'color', block.color || '', '#f4770b')}
       <label><span>Tamanho da fonte</span><input data-field="fontSize" value="${escapeHtml(block.fontSize || '')}" placeholder="16px"></label>
       <label><span>Alinhamento</span>${alignSelect(block.align)}</label>
       ${deleteAction('botao')}
@@ -783,7 +841,7 @@ function renderProperties() {
       <label><span>Facebook</span><input data-field="links.facebook" value="${escapeHtml(block.links?.facebook || '')}" placeholder="https://facebook.com/..."></label>
       <label><span>WhatsApp</span><input data-field="links.whatsapp" value="${escapeHtml(block.links?.whatsapp || '')}" placeholder="https://wa.me/..."></label>
       <label><span>LinkedIn</span><input data-field="links.linkedin" value="${escapeHtml(block.links?.linkedin || '')}" placeholder="https://linkedin.com/..."></label>
-      <label><span>Cor</span><input data-field="color" value="${escapeHtml(block.color || '')}" placeholder="#004477"></label>
+      ${colorField('Cor', 'color', block.color || '', '#004477')}
       <label><span>Tamanho</span><input data-field="size" value="${escapeHtml(block.size || '')}" placeholder="18px"></label>
       ${deleteAction('redes sociais')}
     `;
@@ -1150,6 +1208,19 @@ function paddingControls(value, title = 'Padding (px)') {
   `;
 }
 
+function colorField(label, field, value, placeholder = '#000000') {
+  const normalized = normalizeHexColor(value) || normalizeHexColor(placeholder) || '#000000';
+  return `
+    <label class="editor-color-field">
+      <span>${escapeHtml(label)} <button type="button" data-clear-color-field="${escapeHtml(field)}" aria-label="Limpar cor">x</button></span>
+      <div class="editor-color-control">
+        <button type="button" class="editor-color-swatch" data-open-color-field="${escapeHtml(field)}" style="--color-swatch:${escapeHtml(normalized)}" aria-label="Abrir configuracao de cor"></button>
+        <input data-field="${escapeHtml(field)}" value="${escapeHtml(value || '')}" placeholder="${escapeHtml(placeholder)}">
+      </div>
+    </label>
+  `;
+}
+
 function backgroundControls(entity) {
   const hasBackground = Boolean(entity.background);
   const colorOpacity = opacityPercent(entity.backgroundOpacity, 100);
@@ -1163,8 +1234,8 @@ function backgroundControls(entity) {
           <option value="color"${hasBackground ? ' selected' : ''}>Cor solida</option>
         </select>
       </label>
-      <label><span>Cor de fundo</span><input data-field="background" value="${escapeHtml(entity.background || '')}" placeholder="#ffffff"></label>
-      <label><span>Transparencia da cor (%)</span><input type="range" min="0" max="100" step="1" data-field="backgroundOpacity" data-number-field value="${colorOpacity}"></label>
+      ${colorField('Cor', 'background', entity.background || '', '#ffffff')}
+      <label><span>Opacidade</span><input type="range" min="0" max="100" step="1" data-field="backgroundOpacity" data-number-field value="${colorOpacity}"></label>
       <label><span>Imagem de fundo</span><input data-field="backgroundImage" value="${escapeHtml(entity.backgroundImage || '')}" placeholder="https://..."></label>
       <div class="editor-background-position">
         <span>Alinhamento da imagem</span>
@@ -1172,7 +1243,7 @@ function backgroundControls(entity) {
           ${backgroundPositionOptions(entity.backgroundImagePosition)}
         </div>
       </div>
-      <label><span>Transparencia da imagem (%)</span><input type="range" min="0" max="100" step="1" data-field="backgroundImageOpacity" data-number-field value="${imageOpacity}"></label>
+      <label><span>Opacidade da imagem</span><input type="range" min="0" max="100" step="1" data-field="backgroundImageOpacity" data-number-field value="${imageOpacity}"></label>
     </fieldset>
   `;
 }
@@ -1202,6 +1273,70 @@ function opacityPercent(value, fallback) {
   const number = Number(value);
   if (!Number.isFinite(number)) return fallback;
   return Math.round(Math.max(0, Math.min(100, number > 1 ? number : number * 100)));
+}
+
+function openColorPopover(button) {
+  activeColorField = button.dataset.openColorField || '';
+  const input = propertiesPanel.querySelector(`[data-field="${cssEscape(activeColorField)}"]`);
+  const value = normalizeHexColor(input?.value) || '#000000';
+  syncColorPopover(value);
+  renderUsedColors(value);
+  colorPopover.hidden = false;
+  const rect = button.closest('.editor-color-control')?.getBoundingClientRect() || button.getBoundingClientRect();
+  colorPopover.style.left = `${Math.max(12, rect.left + window.scrollX)}px`;
+  colorPopover.style.top = `${Math.max(12, rect.bottom + window.scrollY + 8)}px`;
+}
+
+function hideColorPopover() {
+  colorPopover.hidden = true;
+  activeColorField = '';
+}
+
+function syncColorPopover(value) {
+  const color = normalizeHexColor(value) || '#000000';
+  const picker = colorPopover.querySelector('[data-color-picker]');
+  const hex = colorPopover.querySelector('[data-color-hex]');
+  if (picker) picker.value = color;
+  if (hex) hex.value = color.toUpperCase();
+}
+
+function updateColorValue(field, value) {
+  if (!field || !selected) return;
+  pushEditHistory();
+  const found = findEntity(selected.id);
+  if (!found?.entity) return;
+  setFieldValue(found.entity, field, value);
+  const input = propertiesPanel.querySelector(`[data-field="${cssEscape(field)}"]`);
+  if (input) input.value = value;
+  const swatch = propertiesPanel.querySelector(`[data-open-color-field="${cssEscape(field)}"]`);
+  if (swatch) swatch.style.setProperty('--color-swatch', normalizeHexColor(value) || '#ffffff');
+  render(false);
+  scheduleSave();
+}
+
+function renderUsedColors(current) {
+  const colors = [...new Set(collectUsedColors(draft))].slice(0, 12);
+  const wrap = colorPopover.querySelector('[data-used-colors]');
+  if (!wrap) return;
+  wrap.innerHTML = colors.map((color) => `<button type="button" data-used-color="${escapeHtml(color)}" style="--color-swatch:${escapeHtml(color)}" aria-label="Usar cor ${escapeHtml(color)}"${color === current ? ' class="active"' : ''}></button>`).join('');
+}
+
+function collectUsedColors(value, found = []) {
+  if (!value || typeof value !== 'object') return found;
+  for (const [key, item] of Object.entries(value)) {
+    if ((key === 'background' || key === 'color') && normalizeHexColor(item)) found.push(normalizeHexColor(item));
+    if (item && typeof item === 'object') collectUsedColors(item, found);
+  }
+  return found;
+}
+
+function normalizeHexColor(value) {
+  const text = String(value || '').trim();
+  const match = text.match(/^#?([0-9a-f]{3}|[0-9a-f]{6})$/i);
+  if (!match) return '';
+  const hex = match[1];
+  if (hex.length === 3) return `#${hex.split('').map((item) => item + item).join('')}`.toLowerCase();
+  return `#${hex}`.toLowerCase();
 }
 
 function elementData(entity, className) {

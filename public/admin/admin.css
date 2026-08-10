@@ -497,9 +497,10 @@ button.danger {
 .editor-properties-panel > .editor-responsive-panel,
 .editor-properties-panel > .editor-fieldset {
   background: #ffffff;
-  border: 1px solid var(--admin-border);
-  border-radius: 8px;
-  padding: 12px;
+  border: 0;
+  border-bottom: 1px solid var(--admin-border);
+  border-radius: 0;
+  padding: 0 0 18px;
 }
 
 .editor-properties-panel > p.editor-muted {
@@ -1054,23 +1055,26 @@ button.danger {
 }
 
 .editor-fieldset {
-  border: 1px solid var(--admin-border);
-  border-radius: 8px;
+  border: 0;
+  border-bottom: 1px solid var(--admin-border);
+  border-radius: 0;
   margin: 0;
-  padding: 12px;
+  padding: 0 0 18px;
 }
 
 .editor-fieldset legend {
   color: var(--admin-blue);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 800;
-  padding: 0 6px;
+  margin: 0 0 14px;
+  padding: 0;
+  width: 100%;
 }
 
 .editor-fieldset legend::before {
-  content: "▰";
-  font-size: 10px;
-  margin-right: 7px;
+  content: "\25A0";
+  font-size: 9px;
+  margin-right: 8px;
 }
 
 .editor-padding-grid {
@@ -1105,6 +1109,115 @@ button.danger {
 .editor-properties-panel span {
   font-size: 13px;
   font-weight: 700;
+}
+
+.editor-color-field > span {
+  align-items: center;
+  display: flex;
+  gap: 3px;
+}
+
+.editor-color-field > span button {
+  align-items: center;
+  background: transparent;
+  border: 1px solid var(--admin-blue);
+  border-radius: 999px;
+  color: var(--admin-blue);
+  display: inline-flex;
+  font-size: 10px;
+  font-weight: 800;
+  height: 13px;
+  justify-content: center;
+  line-height: 1;
+  min-height: 0;
+  padding: 0;
+  width: 13px;
+}
+
+.editor-color-control {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+}
+
+.editor-color-swatch {
+  background: var(--color-swatch, #ffffff);
+  border: 1px solid var(--admin-border);
+  border-radius: 4px 0 0 4px;
+  min-height: 34px;
+  padding: 0;
+  width: 30px;
+}
+
+.editor-color-control input {
+  border-radius: 0 4px 4px 0;
+  min-height: 34px;
+}
+
+.editor-color-popover {
+  background: #ffffff;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.18);
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+  position: absolute;
+  width: 240px;
+  z-index: 80;
+}
+
+.editor-color-popover[hidden] {
+  display: none !important;
+}
+
+.editor-color-picker-wrap input {
+  border: 0;
+  height: 150px;
+  min-height: 150px;
+  padding: 0;
+  width: 100%;
+}
+
+.editor-color-popover label {
+  display: grid;
+  gap: 6px;
+  text-align: center;
+}
+
+.editor-color-popover label span,
+.editor-used-colors > span {
+  color: var(--admin-muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.editor-used-colors {
+  border-top: 1px solid var(--admin-border);
+  display: grid;
+  gap: 10px;
+  padding-top: 10px;
+}
+
+.editor-used-colors div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.editor-used-colors button {
+  background: var(--color-swatch, #ffffff);
+  border: 1px solid var(--admin-border);
+  border-radius: 999px;
+  height: 18px;
+  min-height: 0;
+  padding: 0;
+  width: 18px;
+}
+
+.editor-used-colors button.active {
+  outline: 2px solid var(--admin-blue);
+  outline-offset: 2px;
 }
 
 .editor-element-data {
