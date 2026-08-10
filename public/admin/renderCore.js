@@ -13,7 +13,9 @@ export const dynamicPageStyles = `
   .dynamic-column::after { background-image: var(--column-bg-image, none); background-position: var(--column-bg-position, center center); background-repeat: no-repeat; background-size: cover; opacity: var(--column-bg-image-opacity, 1); z-index: 0; }
   .dynamic-container::before { background: var(--container-bg-color, transparent); opacity: var(--container-bg-opacity, 1); z-index: 0; }
   .dynamic-container::after { background-image: var(--container-bg-image, none); background-position: var(--container-bg-position, center center); background-repeat: no-repeat; background-size: cover; opacity: var(--container-bg-image-opacity, 1); z-index: 0; }
-  .dynamic-section > *, .dynamic-row > *, .dynamic-column > *, .dynamic-container > * { position: relative; z-index: 1; }
+  .dynamic-section > :not(.editor-structure-chrome):not(.editor-column-resize-handle), .dynamic-row > :not(.editor-structure-chrome):not(.editor-column-resize-handle), .dynamic-column > :not(.editor-structure-chrome):not(.editor-column-resize-handle), .dynamic-container > :not(.editor-structure-chrome):not(.editor-column-resize-handle) { position: relative; z-index: 1; }
+  .editor-structure-chrome { position: absolute; z-index: 12; }
+  .editor-column-resize-handle { position: absolute; z-index: 30; }
   .dynamic-text { color: var(--block-color, inherit); font-size: var(--block-font-size, inherit); line-height: 1.65; margin: 0 0 18px; text-align: var(--block-align, left); }
   .dynamic-button-wrap { margin: 0 0 18px; text-align: var(--block-align, left); }
   .dynamic-button { background: var(--button-bg, #f4770b); border-radius: 8px; color: #fff; display: inline-flex; font-size: var(--block-font-size, inherit); font-weight: 700; padding: 12px 18px; text-decoration: none; }
