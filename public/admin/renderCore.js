@@ -1,12 +1,22 @@
 export const dynamicPageStyles = `
   .dynamic-page { color: #1f2937; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-  .dynamic-section { background: var(--section-bg, transparent); padding: var(--section-padding, 56px 20px); position: relative; }
-  .dynamic-row { display: flex; gap: 24px; margin: 0 auto; max-width: var(--page-width, 1120px); position: relative; width: 100%; }
-  .dynamic-column { background: var(--column-bg, transparent); flex: var(--column-width, 1 1 0); min-width: 0; padding: var(--column-padding, 0); position: relative; }
+  .dynamic-section { padding: var(--section-padding, 56px 20px); position: relative; isolation: isolate; }
+  .dynamic-row { display: flex; gap: 24px; margin: 0 auto; max-width: var(--page-width, 1120px); position: relative; width: 100%; isolation: isolate; }
+  .dynamic-column { flex: var(--column-width, 1 1 0); min-width: 0; padding: var(--column-padding, 0); position: relative; isolation: isolate; }
+  .dynamic-container { border: var(--container-border, 0 solid transparent); border-radius: var(--container-radius, 0); margin: 0 0 18px; padding: var(--container-padding, 20px); position: relative; isolation: isolate; }
+  .dynamic-section::before, .dynamic-row::before, .dynamic-column::before, .dynamic-container::before, .dynamic-section::after, .dynamic-row::after, .dynamic-column::after, .dynamic-container::after { border-radius: inherit; content: ""; inset: 0; pointer-events: none; position: absolute; }
+  .dynamic-section::before { background: var(--section-bg-color, transparent); opacity: var(--section-bg-opacity, 1); z-index: 0; }
+  .dynamic-section::after { background-image: var(--section-bg-image, none); background-position: var(--section-bg-position, center center); background-repeat: no-repeat; background-size: cover; opacity: var(--section-bg-image-opacity, 1); z-index: 0; }
+  .dynamic-row::before { background: var(--row-bg-color, transparent); opacity: var(--row-bg-opacity, 1); z-index: 0; }
+  .dynamic-row::after { background-image: var(--row-bg-image, none); background-position: var(--row-bg-position, center center); background-repeat: no-repeat; background-size: cover; opacity: var(--row-bg-image-opacity, 1); z-index: 0; }
+  .dynamic-column::before { background: var(--column-bg-color, transparent); opacity: var(--column-bg-opacity, 1); z-index: 0; }
+  .dynamic-column::after { background-image: var(--column-bg-image, none); background-position: var(--column-bg-position, center center); background-repeat: no-repeat; background-size: cover; opacity: var(--column-bg-image-opacity, 1); z-index: 0; }
+  .dynamic-container::before { background: var(--container-bg-color, transparent); opacity: var(--container-bg-opacity, 1); z-index: 0; }
+  .dynamic-container::after { background-image: var(--container-bg-image, none); background-position: var(--container-bg-position, center center); background-repeat: no-repeat; background-size: cover; opacity: var(--container-bg-image-opacity, 1); z-index: 0; }
+  .dynamic-section > *, .dynamic-row > *, .dynamic-column > *, .dynamic-container > * { position: relative; z-index: 1; }
   .dynamic-text { color: var(--block-color, inherit); font-size: var(--block-font-size, inherit); line-height: 1.65; margin: 0 0 18px; text-align: var(--block-align, left); }
   .dynamic-button-wrap { margin: 0 0 18px; text-align: var(--block-align, left); }
   .dynamic-button { background: var(--button-bg, #f4770b); border-radius: 8px; color: #fff; display: inline-flex; font-size: var(--block-font-size, inherit); font-weight: 700; padding: 12px 18px; text-decoration: none; }
-  .dynamic-container { background: var(--container-bg, transparent); border: var(--container-border, 0 solid transparent); border-radius: var(--container-radius, 0); margin: 0 0 18px; padding: var(--container-padding, 20px); }
   .dynamic-image-wrap { margin: 0 0 18px; text-align: var(--block-align, left); }
   .dynamic-image { border-radius: var(--image-radius, 0); display: inline-block; height: auto; max-width: 100%; width: var(--image-width, auto); }
   .dynamic-image-placeholder { align-items: center; background: #f8fafc; border: 1px dashed #d9e2ec; border-radius: var(--image-radius, 8px); color: #64748b; display: inline-flex; flex-direction: column; font-weight: 700; gap: 8px; justify-content: center; min-height: 180px; padding: 28px; width: min(100%, var(--image-width, 100%)); }
@@ -46,10 +56,9 @@ export function renderResponsiveStyles(pageJson = {}) {
 }
 
 function renderSection(section, options) {
-  const background = cleanCssValue(section?.background);
   const padding = paddingCss(section?.padding);
   const style = [
-    background ? `--section-bg:${background}` : '',
+    ...backgroundStyle(section, 'section'),
     padding ? `--section-padding:${padding}` : ''
   ].filter(Boolean).join(';');
   const rows = Array.isArray(section?.rows) ? section.rows : [];
@@ -60,20 +69,20 @@ function renderSection(section, options) {
 
 function renderRow(row, options) {
   const columns = Array.isArray(row?.columns) ? row.columns : [];
+  const style = backgroundStyle(row, 'row').filter(Boolean).join(';');
   const attrs = editableAttrs('row', row?.id, options);
   const chrome = options.editable ? renderStructureToolbar('row', row?.id) : '';
-  return `<div class="dynamic-row${selectedClass(row?.id, options)}"${attrs}>${chrome}${columns.map((column, index) => renderColumn(column, options, row, columns[index + 1])).join('')}</div>`;
+  return `<div class="dynamic-row${selectedClass(row?.id, options)}"${attrs}${style ? ` style="${escapeHtml(style)}"` : ''}>${chrome}${columns.map((column, index) => renderColumn(column, options, row, columns[index + 1])).join('')}</div>`;
 }
 
 function renderColumn(column, options, row, nextColumn) {
   const width = Number(column?.widthFraction);
   const flex = Number.isFinite(width) && width > 0 ? `${width} ${width} 0` : '';
-  const background = column?.background || '';
   const padding = paddingCss(column?.padding);
   const blocks = Array.isArray(column?.blocks) ? column.blocks : [];
   const style = [
     flex ? `--column-width:${flex}` : '',
-    background ? `--column-bg:${background}` : '',
+    ...backgroundStyle(column, 'column'),
     padding ? `--column-padding:${padding}` : ''
   ].filter(Boolean).join(';');
   const attrs = editableAttrs('column', column?.id, options, ` data-drop-column="${escapeHtml(column?.id || '')}"`);
@@ -118,7 +127,7 @@ function renderContainerBlock(block, options) {
   const children = Array.isArray(block.blocks) ? block.blocks : [];
   const padding = paddingCss(block.padding);
   const style = [
-    cleanCssValue(block.background) ? `--container-bg:${cleanCssValue(block.background)}` : '',
+    ...backgroundStyle(block, 'container'),
     cleanCssValue(block.border) ? `--container-border:${cleanCssValue(block.border)}` : '',
     cleanCssValue(block.radius) ? `--container-radius:${cleanCssValue(block.radius)}` : '',
     padding ? `--container-padding:${padding}` : ''
@@ -331,6 +340,46 @@ function paddingCss(value) {
   const bottom = pixelValue(value.bottom);
   const left = pixelValue(value.left);
   return `${top} ${right} ${bottom} ${left}`;
+}
+
+function backgroundStyle(entity, prefix) {
+  const color = cleanCssValue(entity?.background);
+  const colorOpacity = opacityValue(entity?.backgroundOpacity, 1);
+  const image = safeBackgroundImage(entity?.backgroundImage);
+  const imageOpacity = opacityValue(entity?.backgroundImageOpacity, 1);
+  const position = backgroundPosition(entity?.backgroundImagePosition);
+  return [
+    color ? `--${prefix}-bg-color:${color}` : '',
+    color ? `--${prefix}-bg-opacity:${colorOpacity}` : '',
+    image ? `--${prefix}-bg-image:url("${escapeCssString(image)}")` : '',
+    image ? `--${prefix}-bg-position:${position}` : '',
+    image ? `--${prefix}-bg-image-opacity:${imageOpacity}` : ''
+  ];
+}
+
+function opacityValue(value, fallback) {
+  if (value === '' || value === null || value === undefined) return fallback;
+  const number = Number(value);
+  if (!Number.isFinite(number)) return fallback;
+  return Math.max(0, Math.min(1, number > 1 ? number / 100 : number));
+}
+
+function backgroundPosition(value) {
+  const allowed = new Set([
+    'left top', 'center top', 'right top',
+    'left center', 'center center', 'right center',
+    'left bottom', 'center bottom', 'right bottom'
+  ]);
+  return allowed.has(value) ? value : 'center center';
+}
+
+function safeBackgroundImage(value) {
+  const url = safeHref(value);
+  return url === '#' ? '' : url;
+}
+
+function escapeCssString(value) {
+  return String(value || '').replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 }
 
 function pixelValue(value) {

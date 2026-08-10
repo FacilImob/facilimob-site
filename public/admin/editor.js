@@ -676,8 +676,9 @@ function renderProperties() {
     if (found.kind === 'section') {
       const section = found.entity;
       propertiesPanel.innerHTML = `
-        <label><span>Fundo</span><input data-field="background" value="${escapeHtml(section.background || '')}" placeholder="#ffffff"></label>
+        ${backgroundControls(section)}
         ${paddingControls(section.padding)}
+        ${elementData(section, 'dynamic-section')}
         ${deleteAction('secao')}
       `;
       return;
@@ -685,10 +686,19 @@ function renderProperties() {
 
     if (found.kind === 'column') {
       propertiesPanel.innerHTML = `
-        ${columnBackgroundControls(found.entity)}
+        ${backgroundControls(found.entity)}
         ${paddingControls(found.entity.padding, 'Espacamento')}
-        ${elementData(found.entity, 'rd-column')}
+        ${elementData(found.entity, 'dynamic-column')}
         ${deleteAction('coluna')}
+      `;
+      return;
+    }
+
+    if (found.kind === 'row') {
+      propertiesPanel.innerHTML = `
+        ${backgroundControls(found.entity)}
+        ${elementData(found.entity, 'dynamic-row')}
+        ${deleteAction('linha')}
       `;
       return;
     }
@@ -730,10 +740,11 @@ function renderProperties() {
   if (block.type === 'container') {
     propertiesPanel.innerHTML = `
       ${responsivePanel}
-      <label><span>Fundo</span><input data-field="background" value="${escapeHtml(block.background || '')}" placeholder="#ffffff"></label>
+      ${backgroundControls(block)}
       <label><span>Borda</span><input data-field="border" value="${escapeHtml(block.border || '')}" placeholder="1px solid #d9e2ec"></label>
       <label><span>Raio da borda</span><input data-field="radius" value="${escapeHtml(block.radius || '')}" placeholder="12px"></label>
       ${paddingControls(block.padding)}
+      ${elementData(block, 'dynamic-container')}
       ${deleteAction('container')}
     `;
     return;
@@ -1139,8 +1150,10 @@ function paddingControls(value, title = 'Padding (px)') {
   `;
 }
 
-function columnBackgroundControls(column) {
-  const hasBackground = Boolean(column.background);
+function backgroundControls(entity) {
+  const hasBackground = Boolean(entity.background);
+  const colorOpacity = opacityPercent(entity.backgroundOpacity, 100);
+  const imageOpacity = opacityPercent(entity.backgroundImageOpacity, 100);
   return `
     <fieldset class="editor-fieldset">
       <legend>Estilos de fundo</legend>
@@ -1150,9 +1163,45 @@ function columnBackgroundControls(column) {
           <option value="color"${hasBackground ? ' selected' : ''}>Cor solida</option>
         </select>
       </label>
-      <label><span>Cor de fundo</span><input data-field="background" value="${escapeHtml(column.background || '')}" placeholder="#ffffff"></label>
+      <label><span>Cor de fundo</span><input data-field="background" value="${escapeHtml(entity.background || '')}" placeholder="#ffffff"></label>
+      <label><span>Transparencia da cor (%)</span><input type="range" min="0" max="100" step="1" data-field="backgroundOpacity" data-number-field value="${colorOpacity}"></label>
+      <label><span>Imagem de fundo</span><input data-field="backgroundImage" value="${escapeHtml(entity.backgroundImage || '')}" placeholder="https://..."></label>
+      <div class="editor-background-position">
+        <span>Alinhamento da imagem</span>
+        <div class="editor-position-grid">
+          ${backgroundPositionOptions(entity.backgroundImagePosition)}
+        </div>
+      </div>
+      <label><span>Transparencia da imagem (%)</span><input type="range" min="0" max="100" step="1" data-field="backgroundImageOpacity" data-number-field value="${imageOpacity}"></label>
     </fieldset>
   `;
+}
+
+function backgroundPositionOptions(value = 'center center') {
+  const options = [
+    ['left top', 'Topo esquerda'],
+    ['center top', 'Topo centro'],
+    ['right top', 'Topo direita'],
+    ['left center', 'Centro esquerda'],
+    ['center center', 'Centro'],
+    ['right center', 'Centro direita'],
+    ['left bottom', 'Base esquerda'],
+    ['center bottom', 'Base centro'],
+    ['right bottom', 'Base direita']
+  ];
+  return options.map(([position, label]) => `
+    <label title="${escapeHtml(label)}">
+      <input type="radio" name="background-position-${escapeHtml(selected?.id || 'item')}" data-field="backgroundImagePosition" value="${escapeHtml(position)}" ${position === value ? 'checked' : ''}>
+      <span aria-hidden="true"></span>
+    </label>
+  `).join('');
+}
+
+function opacityPercent(value, fallback) {
+  if (value === '' || value === null || value === undefined) return fallback;
+  const number = Number(value);
+  if (!Number.isFinite(number)) return fallback;
+  return Math.round(Math.max(0, Math.min(100, number > 1 ? number : number * 100)));
 }
 
 function elementData(entity, className) {
