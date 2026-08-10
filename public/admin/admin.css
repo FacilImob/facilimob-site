@@ -798,6 +798,17 @@ button.danger {
   gap: 14px;
 }
 
+.editor-danger-zone {
+  background: #ffffff;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.editor-danger-zone button {
+  width: 100%;
+}
+
 .editor-inline-toolbar {
   align-items: center;
   background: #ffffff;

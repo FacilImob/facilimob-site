@@ -254,6 +254,12 @@ propertiesPanel.addEventListener('change', updateSelectedField);
 document.querySelector('[data-sidebar-panel="page"]').addEventListener('input', updatePageSettingsField);
 document.querySelector('[data-sidebar-panel="page"]').addEventListener('change', updatePageSettingsField);
 propertiesPanel.addEventListener('click', async (event) => {
+  const deleteButton = event.target.closest('[data-delete-selected]');
+  if (deleteButton) {
+    deleteSelectedEntity();
+    return;
+  }
+
   const uploadButton = event.target.closest('[data-upload-image]');
   if (uploadButton) {
     imageUpload.click();
@@ -449,16 +455,23 @@ function renderProperties() {
       propertiesPanel.innerHTML = `
         <label><span>Fundo</span><input data-field="background" value="${escapeHtml(section.background || '')}" placeholder="#ffffff"></label>
         ${paddingControls(section.padding)}
+        ${deleteAction('secao')}
       `;
       return;
     }
 
     if (found.kind === 'column') {
-      propertiesPanel.innerHTML = paddingControls(found.entity.padding);
+      propertiesPanel.innerHTML = `
+        ${paddingControls(found.entity.padding)}
+        ${deleteAction('coluna')}
+      `;
       return;
     }
 
-    propertiesPanel.innerHTML = `<p class="editor-muted">${labelForKind(found.kind)} selecionado.</p>`;
+    propertiesPanel.innerHTML = `
+      <p class="editor-muted">${labelForKind(found.kind)} selecionado.</p>
+      ${deleteAction(labelForKind(found.kind).toLowerCase())}
+    `;
     return;
   }
 
@@ -471,6 +484,7 @@ function renderProperties() {
       <label><span>Cor</span><input data-field="color" value="${escapeHtml(block.color || '')}" placeholder="#1f2937"></label>
       <label><span>Tamanho da fonte</span><input data-field="fontSize" value="${escapeHtml(block.fontSize || '')}" placeholder="18px"></label>
       <label><span>Alinhamento</span>${alignSelect(block.align)}</label>
+      ${deleteAction('texto')}
     `;
     return;
   }
@@ -483,6 +497,7 @@ function renderProperties() {
       <label><span>Cor</span><input data-field="color" value="${escapeHtml(block.color || '')}" placeholder="#f4770b"></label>
       <label><span>Tamanho da fonte</span><input data-field="fontSize" value="${escapeHtml(block.fontSize || '')}" placeholder="16px"></label>
       <label><span>Alinhamento</span>${alignSelect(block.align)}</label>
+      ${deleteAction('botao')}
     `;
     return;
   }
@@ -494,6 +509,7 @@ function renderProperties() {
       <label><span>Borda</span><input data-field="border" value="${escapeHtml(block.border || '')}" placeholder="1px solid #d9e2ec"></label>
       <label><span>Raio da borda</span><input data-field="radius" value="${escapeHtml(block.radius || '')}" placeholder="12px"></label>
       ${paddingControls(block.padding)}
+      ${deleteAction('container')}
     `;
     return;
   }
@@ -508,6 +524,7 @@ function renderProperties() {
       <label><span>Largura</span><input data-field="width" value="${escapeHtml(block.width || '')}" placeholder="100%"></label>
       <label><span>Arredondamento</span><input data-field="radius" value="${escapeHtml(block.radius || '')}" placeholder="12px"></label>
       <label><span>Alinhamento</span>${alignSelect(block.align)}</label>
+      ${deleteAction('imagem')}
     `;
     return;
   }
@@ -518,6 +535,7 @@ function renderProperties() {
       <label><span>URL do video</span><input data-field="url" value="${escapeHtml(block.url || '')}" placeholder="YouTube, Vimeo ou arquivo"></label>
       <label class="editor-check"><input type="checkbox" data-field="controls" ${block.controls === false ? '' : 'checked'}> <span>Mostrar controles</span></label>
       <label class="editor-check"><input type="checkbox" data-field="autoplay" ${block.autoplay ? 'checked' : ''}> <span>Autoplay</span></label>
+      ${deleteAction('video')}
     `;
     return;
   }
@@ -531,6 +549,7 @@ function renderProperties() {
       <label><span>LinkedIn</span><input data-field="links.linkedin" value="${escapeHtml(block.links?.linkedin || '')}" placeholder="https://linkedin.com/..."></label>
       <label><span>Cor</span><input data-field="color" value="${escapeHtml(block.color || '')}" placeholder="#004477"></label>
       <label><span>Tamanho</span><input data-field="size" value="${escapeHtml(block.size || '')}" placeholder="18px"></label>
+      ${deleteAction('redes sociais')}
     `;
     return;
   }
@@ -555,6 +574,7 @@ function renderProperties() {
           </div>
         `).join('') || '<p class="editor-muted">Nenhuma pagina publicada.</p>'}
       </div>
+      ${deleteAction('menu')}
     `;
     return;
   }
@@ -564,6 +584,7 @@ function renderProperties() {
       ${responsivePanel}
       <label><span>Codigo HTML</span><textarea data-field="code">${escapeHtml(block.code || '')}</textarea></label>
       <label><span>Altura</span><input data-field="height" value="${escapeHtml(block.height || '')}" placeholder="180px"></label>
+      ${deleteAction('html')}
     `;
   }
 }
@@ -619,6 +640,21 @@ function redo() {
   selected = null;
   render();
   scheduleSave();
+}
+
+function deleteSelectedEntity() {
+  if (!selected?.id) return;
+  const found = findEntity(selected.id);
+  if (!found?.entity) return;
+  const label = labelForKind(found.kind).toLowerCase();
+  const detail = found.kind === 'block' ? blockLabel(found.entity) : label;
+
+  if (!window.confirm(`Excluir ${detail}? Esta acao nao pode ser desfeita depois de salvar.`)) return;
+
+  applyChange(() => {
+    removeEntity(selected.id, found.kind);
+    selected = null;
+  });
 }
 
 function scheduleSave() {
@@ -683,6 +719,44 @@ function removeBlock(id) {
     }
   }
   return null;
+}
+
+function removeEntity(id, kind) {
+  if (kind === 'section') {
+    const index = draft.sections.findIndex((section) => section.id === id);
+    if (index >= 0) draft.sections.splice(index, 1);
+    return;
+  }
+
+  if (kind === 'row') {
+    for (const section of draft.sections) {
+      const rows = Array.isArray(section.rows) ? section.rows : [];
+      const index = rows.findIndex((row) => row.id === id);
+      if (index >= 0) {
+        rows.splice(index, 1);
+        return;
+      }
+    }
+    return;
+  }
+
+  if (kind === 'column') {
+    for (const section of draft.sections) {
+      for (const row of section.rows || []) {
+        const columns = Array.isArray(row.columns) ? row.columns : [];
+        const index = columns.findIndex((column) => column.id === id);
+        if (index >= 0) {
+          columns.splice(index, 1);
+          return;
+        }
+      }
+    }
+    return;
+  }
+
+  if (kind === 'block') {
+    removeBlock(id);
+  }
 }
 
 function newSection() {
@@ -840,6 +914,14 @@ function paddingControls(value) {
   `;
 }
 
+function deleteAction(label) {
+  return `
+    <div class="editor-danger-zone">
+      <button class="secondary danger" type="button" data-delete-selected>Excluir ${escapeHtml(label)}</button>
+    </div>
+  `;
+}
+
 function paddingObject(value) {
   if (value && typeof value === 'object') {
     return {
@@ -972,6 +1054,20 @@ function labelForKind(kind) {
   if (kind === 'row') return 'Linha';
   if (kind === 'column') return 'Coluna';
   return 'Item';
+}
+
+function blockLabel(block) {
+  const labels = {
+    button: 'botao',
+    container: 'container',
+    html: 'html',
+    image: 'imagem',
+    menu: 'menu',
+    social: 'redes sociais',
+    text: 'texto',
+    video: 'video'
+  };
+  return labels[block?.type] || 'bloco';
 }
 
 function uid(prefix) {
