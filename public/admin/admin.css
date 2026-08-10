@@ -454,7 +454,7 @@ button.danger {
 
 .editor-shell {
   display: grid;
-  grid-template-columns: 292px minmax(0, 1fr) 324px;
+  grid-template-columns: 332px minmax(0, 1fr);
   height: calc(100vh - 68px);
   min-height: 520px;
 }
@@ -483,6 +483,10 @@ button.danger {
 
 .editor-sidebar {
   border-right: 1px solid var(--admin-border);
+}
+
+.editor-sidebar[data-active-panel="element"] .editor-sidebar-tabs {
+  display: none;
 }
 
 .editor-properties {
@@ -571,8 +575,53 @@ button.danger {
   gap: 14px;
 }
 
-.editor-page-panel[hidden] {
+.editor-page-panel[hidden],
+.editor-element-panel[hidden] {
   display: none !important;
+}
+
+.editor-element-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: calc(100vh - 112px);
+}
+
+.editor-element-header {
+  align-items: center;
+  border-bottom: 1px solid var(--admin-border);
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 32px minmax(0, 1fr) 32px;
+  margin: -6px -22px 2px;
+  padding: 0 12px 14px;
+}
+
+.editor-sidebar .editor-element-header h2 {
+  font-size: 16px;
+  margin: 0;
+}
+
+.editor-panel-icon-button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  color: var(--admin-blue);
+  display: inline-flex;
+  font-size: 22px;
+  justify-content: center;
+  min-height: 32px;
+  padding: 0;
+}
+
+.editor-panel-icon-button:hover {
+  background: #f0f6fb;
+}
+
+.editor-panel-close {
+  align-self: flex-end;
+  margin-top: auto;
 }
 
 .editor-page-panel label {
@@ -710,6 +759,12 @@ button.danger {
   outline-offset: 3px;
 }
 
+.editor-canvas .dynamic-row.is-selected,
+.editor-canvas .dynamic-column.is-selected {
+  outline: 1px dashed var(--admin-blue);
+  outline-offset: 3px;
+}
+
 .editor-canvas .dynamic-row:hover > .editor-structure-chrome,
 .editor-canvas .dynamic-column:hover > .editor-structure-chrome,
 .editor-canvas .dynamic-row.is-selected > .editor-structure-chrome,
@@ -757,14 +812,27 @@ button.danger {
 }
 
 .editor-structure-toolbar button {
+  align-items: center;
   background: #ffffff;
   border: 1px solid transparent;
   border-radius: 6px;
   color: var(--admin-blue);
+  display: inline-flex;
   font-size: 11px;
+  justify-content: center;
   min-height: 26px;
   min-width: 28px;
   padding: 4px 6px;
+}
+
+.editor-structure-toolbar svg {
+  fill: none;
+  height: 17px;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+  width: 17px;
 }
 
 .editor-structure-toolbar button:hover {
@@ -781,6 +849,79 @@ button.danger {
   border-radius: 8px;
   min-height: 88px;
   padding: 10px;
+}
+
+.editor-column-resize-handle {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  bottom: 8px;
+  cursor: col-resize;
+  display: flex;
+  justify-content: center;
+  min-height: 0;
+  min-width: 0;
+  opacity: 0;
+  padding: 0;
+  position: absolute;
+  right: -34px;
+  top: 8px;
+  transition: opacity 0.16s ease;
+  width: 68px;
+  z-index: 30;
+}
+
+.editor-column-resize-handle::before {
+  background: var(--admin-blue);
+  border-radius: 999px;
+  bottom: 10px;
+  content: "";
+  opacity: 0.68;
+  position: absolute;
+  top: 10px;
+  width: 2px;
+}
+
+.editor-column-resize-handle span {
+  background: var(--admin-blue);
+  border: 2px solid #ffffff;
+  border-radius: 999px;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.16);
+  display: block;
+  height: 18px;
+  position: relative;
+  width: 18px;
+}
+
+.editor-column-resize-handle span::before,
+.editor-column-resize-handle span::after {
+  background: #ffffff;
+  border-radius: 999px;
+  content: "";
+  height: 8px;
+  position: absolute;
+  top: 3px;
+  width: 2px;
+}
+
+.editor-column-resize-handle span::before {
+  left: 5px;
+}
+
+.editor-column-resize-handle span::after {
+  right: 5px;
+}
+
+.editor-canvas .dynamic-row:hover .editor-column-resize-handle,
+.editor-canvas .dynamic-row.is-selected .editor-column-resize-handle,
+.editor-column-resize-handle:hover {
+  opacity: 1;
+}
+
+.editor-column-resizing,
+.editor-column-resizing * {
+  cursor: col-resize !important;
+  user-select: none;
 }
 
 .editor-drop-hint {
@@ -922,8 +1063,14 @@ button.danger {
 .editor-fieldset legend {
   color: var(--admin-blue);
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 800;
   padding: 0 6px;
+}
+
+.editor-fieldset legend::before {
+  content: "▰";
+  font-size: 10px;
+  margin-right: 7px;
 }
 
 .editor-padding-grid {
@@ -958,6 +1105,25 @@ button.danger {
 .editor-properties-panel span {
   font-size: 13px;
   font-weight: 700;
+}
+
+.editor-element-data {
+  display: grid;
+  gap: 10px;
+}
+
+.editor-element-data p {
+  color: var(--admin-text);
+  margin: 0;
+}
+
+.editor-element-data code {
+  background: #f1f5f9;
+  border-radius: 4px;
+  color: var(--admin-error);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 12px;
+  padding: 2px 4px;
 }
 
 .editor-layout-grid {

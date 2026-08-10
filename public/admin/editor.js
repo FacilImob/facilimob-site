@@ -3,6 +3,7 @@ import { dynamicPageStyles, pageStyle, renderPageContent } from './renderCore.js
 const pageId = new URLSearchParams(window.location.search).get('page');
 const canvas = document.querySelector('#canvas');
 const propertiesPanel = document.querySelector('#propertiesPanel');
+const elementPanelTitle = document.querySelector('#elementPanelTitle');
 const saveStatus = document.querySelector('#saveStatus');
 const pageTitle = document.querySelector('#pageTitle');
 const pageMeta = document.querySelector('#pageMeta');
@@ -23,7 +24,10 @@ let history = [];
 let future = [];
 let suppressHistory = false;
 let currentBreakpoint = 'desktop';
+let columnResize = null;
 const transientAlignment = new Map();
+const COLUMN_RESIZE_MIN_RATIO = 0.1;
+const COLUMN_RESIZE_STEP = 0.5;
 
 document.querySelector('#dynamicStyles').textContent = dynamicPageStyles;
 inlineToolbar.className = 'editor-inline-toolbar';
@@ -51,6 +55,9 @@ document.querySelectorAll('[data-page-settings]').forEach((button) => {
 });
 sidebarTabs.forEach((button) => {
   button.addEventListener('click', () => showSidebarPanel(button.dataset.sidebarTab));
+});
+document.querySelectorAll('[data-close-element-settings]').forEach((button) => {
+  button.addEventListener('click', closeElementSettings);
 });
 document.querySelector('[data-preview]').addEventListener('click', () => {
   window.open(`/admin/preview/${pageId}`, '_blank', 'noopener');
@@ -82,6 +89,7 @@ rowDialog.addEventListener('click', (event) => {
 
 canvas.addEventListener('click', (event) => {
   if (event.target.closest('.dynamic-button')) event.preventDefault();
+  if (event.target.closest('[data-column-resize]')) return;
 
   const structureButton = event.target.closest('[data-structure-action]');
   if (structureButton) {
@@ -131,6 +139,11 @@ canvas.addEventListener('click', (event) => {
     render();
   }
 });
+
+document.addEventListener('pointerdown', startColumnResize, true);
+window.addEventListener('pointermove', resizeColumns);
+window.addEventListener('pointerup', finishColumnResize);
+window.addEventListener('pointercancel', finishColumnResize);
 
 canvas.addEventListener('input', (event) => {
   const editableText = event.target.closest('[data-inline-text]');
@@ -340,6 +353,12 @@ function updateSelectedField(event) {
   } else {
     const found = findEntity(selected.id);
     if (!found?.entity) return;
+    if (field === 'backgroundMode') {
+      found.entity.background = value === 'transparent' ? '' : (found.entity.background || '#ffffff');
+      render();
+      scheduleSave();
+      return;
+    }
     setFieldValue(found.entity, field, value);
   }
 
@@ -357,11 +376,18 @@ function updatePageSettingsField(event) {
 }
 
 function showSidebarPanel(name) {
+  document.querySelector('.editor-sidebar').dataset.activePanel = name;
   sidebarTabs.forEach((button) => button.classList.toggle('active', button.dataset.sidebarTab === name));
   sidebarPanels.forEach((panel) => {
     panel.hidden = panel.dataset.sidebarPanel !== name;
   });
   if (name === 'page') renderPageSettingsPanel();
+}
+
+function closeElementSettings() {
+  selected = null;
+  render();
+  showSidebarPanel('components');
 }
 
 function renderPageSettingsPanel() {
@@ -428,6 +454,83 @@ function handleStructureAction(button) {
     if (action === 'move-left') moveColumn(id, 'left');
     if (action === 'move-right') moveColumn(id, 'right');
   });
+}
+
+function startColumnResize(event) {
+  const handle = event.target.closest('[data-column-resize]');
+  if (!handle) return;
+  if (!canvas.contains(handle)) return;
+
+  const rowId = handle.dataset.rowId;
+  const leftColumnId = handle.dataset.leftColumnId;
+  const rightColumnId = handle.dataset.rightColumnId;
+  const row = findEntity(rowId)?.entity;
+  const leftColumn = findEntity(leftColumnId)?.entity;
+  const rightColumn = findEntity(rightColumnId)?.entity;
+  const rowElement = handle.closest('[data-editor-kind="row"]');
+  const rowRectWidth = rowElement?.getBoundingClientRect().width || 0;
+  if (!row?.columns?.length || !leftColumn || !rightColumn || rowRectWidth <= 0) return;
+  const rowStyle = window.getComputedStyle(rowElement);
+  const rowGap = Number.parseFloat(rowStyle.columnGap || rowStyle.gap) || 0;
+  const rowWidth = Math.max(1, rowRectWidth - rowGap * Math.max(0, row.columns.length - 1));
+
+  event.preventDefault();
+  event.stopPropagation();
+  selected = { id: rowId, kind: 'row' };
+  markSelectedElement(rowElement);
+  renderProperties();
+  history.push(clone(draft));
+  future = [];
+
+  const leftStart = columnFraction(leftColumn);
+  const rightStart = columnFraction(rightColumn);
+  const pairTotal = leftStart + rightStart;
+  const totalFractions = row.columns.reduce((sum, column) => sum + columnFraction(column), 0) || 12;
+
+  columnResize = {
+    pointerId: event.pointerId,
+    startX: event.clientX,
+    rowWidth,
+    totalFractions,
+    pairTotal,
+    leftStart,
+    rightStart,
+    leftColumnId,
+    rightColumnId
+  };
+
+  handle.setPointerCapture?.(event.pointerId);
+  document.body.classList.add('editor-column-resizing');
+}
+
+function resizeColumns(event) {
+  if (!columnResize || event.pointerId !== columnResize.pointerId) return;
+
+  event.preventDefault();
+  const leftColumn = findEntity(columnResize.leftColumnId)?.entity;
+  const rightColumn = findEntity(columnResize.rightColumnId)?.entity;
+  if (!leftColumn || !rightColumn) return;
+
+  const deltaPixels = event.clientX - columnResize.startX;
+  const deltaFraction = (deltaPixels / columnResize.rowWidth) * columnResize.totalFractions;
+  const min = Math.min(columnResize.pairTotal / 2, Math.max(0.25, columnResize.totalFractions * COLUMN_RESIZE_MIN_RATIO));
+  const nextLeft = clampFraction(roundToStep(columnResize.leftStart + deltaFraction, COLUMN_RESIZE_STEP), min, columnResize.pairTotal - min);
+  const nextRight = Number((columnResize.pairTotal - nextLeft).toFixed(2));
+
+  leftColumn.widthFraction = nextLeft;
+  rightColumn.widthFraction = nextRight;
+  updateColumnFlex(columnResize.leftColumnId, nextLeft);
+  updateColumnFlex(columnResize.rightColumnId, nextRight);
+  saveStatus.textContent = 'Salvando...';
+}
+
+function finishColumnResize(event) {
+  if (!columnResize || event.pointerId !== columnResize.pointerId) return;
+  columnResize = null;
+  document.body.classList.remove('editor-column-resizing');
+  draft = normalizePageJson(draft);
+  render();
+  scheduleSave();
 }
 
 function structureDropTarget(event, structure) {
@@ -549,6 +652,7 @@ function render(updateProperties = true) {
 function renderProperties() {
   if (!selected) {
     propertiesPanel.innerHTML = '<p class="editor-muted">Selecione uma secao, linha, coluna ou bloco.</p>';
+    if (document.querySelector('.editor-sidebar').dataset.activePanel === 'element') showSidebarPanel('components');
     return;
   }
 
@@ -565,6 +669,9 @@ function renderProperties() {
     return;
   }
 
+  showSidebarPanel('element');
+  elementPanelTitle.textContent = found.kind === 'block' ? blockLabelTitle(found.entity) : labelForKind(found.kind);
+
   if (found.kind !== 'block') {
     if (found.kind === 'section') {
       const section = found.entity;
@@ -578,7 +685,9 @@ function renderProperties() {
 
     if (found.kind === 'column') {
       propertiesPanel.innerHTML = `
-        ${paddingControls(found.entity.padding)}
+        ${columnBackgroundControls(found.entity)}
+        ${paddingControls(found.entity.padding, 'Espacamento')}
+        ${elementData(found.entity, 'rd-column')}
         ${deleteAction('coluna')}
       `;
       return;
@@ -1015,17 +1124,43 @@ function markSelectedElement(element) {
   element.classList.add('is-selected');
 }
 
-function paddingControls(value) {
+function paddingControls(value, title = 'Padding (px)') {
   const padding = paddingObject(value);
   return `
     <fieldset class="editor-fieldset">
-      <legend>Padding (px)</legend>
+      <legend>${escapeHtml(title)}</legend>
       <div class="editor-padding-grid">
         <label><span>Topo</span><input type="number" min="0" step="1" data-field="padding.top" data-number-field value="${padding.top}"></label>
         <label><span>Base</span><input type="number" min="0" step="1" data-field="padding.bottom" data-number-field value="${padding.bottom}"></label>
         <label><span>Esquerda</span><input type="number" min="0" step="1" data-field="padding.left" data-number-field value="${padding.left}"></label>
         <label><span>Direita</span><input type="number" min="0" step="1" data-field="padding.right" data-number-field value="${padding.right}"></label>
       </div>
+    </fieldset>
+  `;
+}
+
+function columnBackgroundControls(column) {
+  const hasBackground = Boolean(column.background);
+  return `
+    <fieldset class="editor-fieldset">
+      <legend>Estilos de fundo</legend>
+      <label><span>Tipo</span>
+        <select data-field="backgroundMode">
+          <option value="transparent"${hasBackground ? '' : ' selected'}>Transparente</option>
+          <option value="color"${hasBackground ? ' selected' : ''}>Cor solida</option>
+        </select>
+      </label>
+      <label><span>Cor de fundo</span><input data-field="background" value="${escapeHtml(column.background || '')}" placeholder="#ffffff"></label>
+    </fieldset>
+  `;
+}
+
+function elementData(entity, className) {
+  return `
+    <fieldset class="editor-fieldset editor-element-data">
+      <legend>Dados do elemento</legend>
+      <p><span>ID:</span> <code>#${escapeHtml(entity.id || '')}</code></p>
+      <p><span>Class:</span> <code>.${escapeHtml(className || '')}</code></p>
     </fieldset>
   `;
 }
@@ -1172,6 +1307,11 @@ function labelForKind(kind) {
   return 'Item';
 }
 
+function blockLabelTitle(block) {
+  const title = blockLabel(block);
+  return title ? title.charAt(0).toUpperCase() + title.slice(1) : 'Bloco';
+}
+
 function blockLabel(block) {
   const labels = {
     button: 'botao',
@@ -1220,6 +1360,26 @@ function escapeHtml(value) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+function columnFraction(column) {
+  const value = Number(column?.widthFraction);
+  return Number.isFinite(value) && value > 0 ? value : 1;
+}
+
+function roundToStep(value, step) {
+  return Number((Math.round(value / step) * step).toFixed(2));
+}
+
+function clampFraction(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function updateColumnFlex(id, widthFraction) {
+  const element = canvas.querySelector(`[data-editor-id="${cssEscape(id)}"]`);
+  if (!element) return;
+  element.style.setProperty('--column-width', `${widthFraction} ${widthFraction} 0`);
+  element.style.flex = `${widthFraction} ${widthFraction} 0`;
 }
 
 function cssEscape(value) {

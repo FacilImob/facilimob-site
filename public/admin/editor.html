@@ -111,18 +111,23 @@
           <label><span>SEO title</span><input data-page-field="seo_title"></label>
           <label><span>SEO description</span><textarea data-page-field="seo_description"></textarea></label>
         </div>
+        <div class="editor-element-panel" data-sidebar-panel="element" hidden>
+          <div class="editor-element-header">
+            <button class="editor-panel-icon-button" type="button" data-close-element-settings aria-label="Voltar para componentes">←</button>
+            <h2 id="elementPanelTitle">Elemento</h2>
+            <button class="editor-panel-icon-button" type="button" data-close-element-settings aria-label="Fechar configuracoes">×</button>
+          </div>
+          <div id="propertiesPanel" class="editor-properties-panel">
+            <p class="editor-muted">Selecione uma secao, linha, coluna ou bloco.</p>
+          </div>
+          <button class="secondary editor-panel-close" type="button" data-close-element-settings>Fechar</button>
+        </div>
       </aside>
 
       <section class="editor-stage">
         <div id="canvas" class="editor-canvas dynamic-page"></div>
       </section>
 
-      <aside class="editor-properties">
-        <h2>Propriedades</h2>
-        <div id="propertiesPanel" class="editor-properties-panel">
-          <p class="editor-muted">Selecione uma seção, linha, coluna ou bloco.</p>
-        </div>
-      </aside>
     </main>
 
     <dialog id="rowDialog" class="admin-dialog">

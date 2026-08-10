@@ -2,7 +2,7 @@ export const dynamicPageStyles = `
   .dynamic-page { color: #1f2937; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
   .dynamic-section { background: var(--section-bg, transparent); padding: var(--section-padding, 56px 20px); position: relative; }
   .dynamic-row { display: flex; gap: 24px; margin: 0 auto; max-width: var(--page-width, 1120px); position: relative; width: 100%; }
-  .dynamic-column { flex: var(--column-width, 1 1 0); min-width: 0; padding: var(--column-padding, 0); position: relative; }
+  .dynamic-column { background: var(--column-bg, transparent); flex: var(--column-width, 1 1 0); min-width: 0; padding: var(--column-padding, 0); position: relative; }
   .dynamic-text { color: var(--block-color, inherit); font-size: var(--block-font-size, inherit); line-height: 1.65; margin: 0 0 18px; text-align: var(--block-align, left); }
   .dynamic-button-wrap { margin: 0 0 18px; text-align: var(--block-align, left); }
   .dynamic-button { background: var(--button-bg, #f4770b); border-radius: 8px; color: #fff; display: inline-flex; font-size: var(--block-font-size, inherit); font-weight: 700; padding: 12px 18px; text-decoration: none; }
@@ -62,21 +62,24 @@ function renderRow(row, options) {
   const columns = Array.isArray(row?.columns) ? row.columns : [];
   const attrs = editableAttrs('row', row?.id, options);
   const chrome = options.editable ? renderStructureToolbar('row', row?.id) : '';
-  return `<div class="dynamic-row${selectedClass(row?.id, options)}"${attrs}>${chrome}${columns.map((column) => renderColumn(column, options)).join('')}</div>`;
+  return `<div class="dynamic-row${selectedClass(row?.id, options)}"${attrs}>${chrome}${columns.map((column, index) => renderColumn(column, options, row, columns[index + 1])).join('')}</div>`;
 }
 
-function renderColumn(column, options) {
+function renderColumn(column, options, row, nextColumn) {
   const width = Number(column?.widthFraction);
   const flex = Number.isFinite(width) && width > 0 ? `${width} ${width} 0` : '';
+  const background = column?.background || '';
   const padding = paddingCss(column?.padding);
   const blocks = Array.isArray(column?.blocks) ? column.blocks : [];
   const style = [
     flex ? `--column-width:${flex}` : '',
+    background ? `--column-bg:${background}` : '',
     padding ? `--column-padding:${padding}` : ''
   ].filter(Boolean).join(';');
   const attrs = editableAttrs('column', column?.id, options, ` data-drop-column="${escapeHtml(column?.id || '')}"`);
   const chrome = options.editable ? renderStructureToolbar('column', column?.id) : '';
-  return `<div class="dynamic-column${selectedClass(column?.id, options)}"${attrs}${style ? ` style="${escapeHtml(style)}"` : ''}>${chrome}${blocks.map((block) => renderBlock(block, options)).join('')}${options.editable ? '<div class="editor-drop-hint">Solte blocos aqui</div>' : ''}</div>`;
+  const resizeHandle = options.editable && nextColumn ? renderColumnResizeHandle(row?.id, column?.id, nextColumn?.id) : '';
+  return `<div class="dynamic-column${selectedClass(column?.id, options)}"${attrs}${style ? ` style="${escapeHtml(style)}"` : ''}>${chrome}${blocks.map((block) => renderBlock(block, options)).join('')}${resizeHandle}${options.editable ? '<div class="editor-drop-hint">Solte blocos aqui</div>' : ''}</div>`;
 }
 
 function renderBlock(block, options) {
@@ -204,16 +207,33 @@ function renderStructureToolbar(kind, id) {
     <div class="editor-structure-chrome" data-structure-chrome="${safeKind}" data-structure-id="${safeId}">
       <span class="editor-structure-label">${label}</span>
       <div class="editor-structure-toolbar" aria-label="Ferramentas de ${label}">
-        <button type="button" data-structure-action="duplicate" data-structure-kind="${safeKind}" data-structure-id="${safeId}" title="Duplicar" aria-label="Duplicar">Dup</button>
-        <button type="button" data-structure-action="align-top" data-structure-kind="${safeKind}" data-structure-id="${safeId}" title="Alinhar ao topo" aria-label="Alinhar ao topo">Top</button>
-        <button type="button" data-structure-action="equalize" data-structure-kind="${safeKind}" data-structure-id="${safeId}" title="Redistribuir colunas" aria-label="Redistribuir colunas">=</button>
-        <button type="button" data-structure-action="align-bottom" data-structure-kind="${safeKind}" data-structure-id="${safeId}" title="Alinhar a base" aria-label="Alinhar a base">Base</button>
-        <button type="button" data-structure-action="move-left" data-structure-kind="${safeKind}" data-structure-id="${safeId}" title="Mover coluna para a esquerda" aria-label="Mover coluna para a esquerda">&lt;</button>
-        <button type="button" data-structure-action="move-right" data-structure-kind="${safeKind}" data-structure-id="${safeId}" title="Mover coluna para a direita" aria-label="Mover coluna para a direita">&gt;</button>
-        <button type="button" data-structure-action="delete" data-structure-kind="${safeKind}" data-structure-id="${safeId}" title="Excluir" aria-label="Excluir">X</button>
+        <button type="button" data-structure-action="duplicate" data-structure-kind="${safeKind}" data-structure-id="${safeId}" title="Duplicar" aria-label="Duplicar">${toolbarIcon('duplicate')}</button>
+        <button type="button" data-structure-action="align-top" data-structure-kind="${safeKind}" data-structure-id="${safeId}" title="Alinhar ao topo" aria-label="Alinhar ao topo">${toolbarIcon('align-top')}</button>
+        <button type="button" data-structure-action="equalize" data-structure-kind="${safeKind}" data-structure-id="${safeId}" title="Redistribuir colunas" aria-label="Redistribuir colunas">${toolbarIcon('equalize')}</button>
+        <button type="button" data-structure-action="align-bottom" data-structure-kind="${safeKind}" data-structure-id="${safeId}" title="Alinhar a base" aria-label="Alinhar a base">${toolbarIcon('align-bottom')}</button>
+        <button type="button" data-structure-action="move-left" data-structure-kind="${safeKind}" data-structure-id="${safeId}" title="Mover coluna para a esquerda" aria-label="Mover coluna para a esquerda">${toolbarIcon('move-left')}</button>
+        <button type="button" data-structure-action="move-right" data-structure-kind="${safeKind}" data-structure-id="${safeId}" title="Mover coluna para a direita" aria-label="Mover coluna para a direita">${toolbarIcon('move-right')}</button>
+        <button type="button" data-structure-action="delete" data-structure-kind="${safeKind}" data-structure-id="${safeId}" title="Excluir" aria-label="Excluir">${toolbarIcon('delete')}</button>
       </div>
     </div>
   `;
+}
+
+function renderColumnResizeHandle(rowId, leftColumnId, rightColumnId) {
+  return `<button class="editor-column-resize-handle" type="button" data-column-resize="true" data-row-id="${escapeHtml(rowId || '')}" data-left-column-id="${escapeHtml(leftColumnId || '')}" data-right-column-id="${escapeHtml(rightColumnId || '')}" title="Arraste para ajustar a largura das colunas" aria-label="Arraste para ajustar a largura das colunas"><span aria-hidden="true"></span></button>`;
+}
+
+function toolbarIcon(action) {
+  const icons = {
+    duplicate: '<path d="M8 8h10v10H8z"/><path d="M5 15V5h10"/>',
+    'align-top': '<path d="M5 5h14"/><path d="M8 9h4v10H8z"/><path d="M16 9v10"/>',
+    equalize: '<path d="M5 12h14"/><path d="M9 7v10"/><path d="M15 7v10"/>',
+    'align-bottom': '<path d="M5 19h14"/><path d="M8 5h4v10H8z"/><path d="M16 5v10"/>',
+    'move-left': '<path d="M12 5l-6 7 6 7"/><path d="M7 12h12"/>',
+    'move-right': '<path d="M12 5l6 7-6 7"/><path d="M5 12h12"/>',
+    delete: '<path d="M6 7h12"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M8 7l1 12h6l1-12"/><path d="M10 7V5h4v2"/>'
+  };
+  return `<svg viewBox="0 0 24 24" aria-hidden="true">${icons[action] || ''}</svg>`;
 }
 
 function editableAttrs(kind, id, options, extra = '') {
