@@ -1,6 +1,43 @@
 import { siteSupabaseAdmin } from './siteSupabaseAdmin.js';
 import { dynamicPageStyles, pageStyle, renderPageContent, renderResponsiveStyles } from '../public/admin/renderCore.js';
 
+export async function renderPublishedHomePage(_req, res, next) {
+  let page;
+  let menuPages = [];
+
+  try {
+    const [pageResult, menuResult] = await Promise.all([
+      siteSupabaseAdmin
+        .from('pages')
+        .select('title,slug,published_json,seo_title,seo_description')
+        .eq('is_home', true)
+        .eq('status', 'published')
+        .maybeSingle(),
+      siteSupabaseAdmin
+        .from('pages')
+        .select('id,title,slug')
+        .eq('status', 'published')
+        .order('title', { ascending: true })
+    ]);
+    page = pageResult.data;
+    if (pageResult.error) {
+      console.error('[site-render-home] pages select error', pageResult.error.message);
+      return next();
+    }
+    if (menuResult.error) {
+      console.error('[site-render-home] menu pages select error', menuResult.error.message);
+    } else {
+      menuPages = menuResult.data || [];
+    }
+  } catch (clientError) {
+    console.error('[site-render-home] Supabase client error', clientError.message);
+    return next();
+  }
+
+  if (!page?.published_json) return next();
+  return res.type('html').send(renderHtml(page, { menuPages }));
+}
+
 export async function renderPublishedPage(req, res, next) {
   const slug = cleanSlug(req.params.slug);
 

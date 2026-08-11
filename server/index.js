@@ -11,7 +11,7 @@ import leadsRoutes from './routes/leads.js';
 import shareRoutes from './routes/share.js';
 import simulationsRoutes from './routes/simulations.js';
 import { pageAuth } from './middleware/auth.js';
-import { renderAdminPreviewPage, renderPublishedPage } from './sitePageRenderer.js';
+import { renderAdminPreviewPage, renderPublishedHomePage, renderPublishedPage } from './sitePageRenderer.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -49,7 +49,7 @@ app.use('/api/leads', leadsRoutes);
 app.use('/api/share', shareRoutes);
 app.use('/api/simulations', simulationsRoutes);
 
-app.get('/', (_req, res) => {
+app.get('/', renderPublishedHomePage, (_req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
 
