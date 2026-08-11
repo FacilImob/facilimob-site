@@ -1,6 +1,6 @@
 import { dynamicPageStyles, pageStyle, renderPageContent } from './renderCore.js';
 
-const pageId = new URLSearchParams(window.location.search).get('page');
+let pageId = new URLSearchParams(window.location.search).get('page');
 const canvas = document.querySelector('#canvas');
 const propertiesPanel = document.querySelector('#propertiesPanel');
 const elementPanelTitle = document.querySelector('#elementPanelTitle');
@@ -688,6 +688,10 @@ async function init() {
       api(`/api/admin/pages/${pageId}`),
       api('/api/admin/menu-pages')
     ]);
+    if (page?.id && page.id !== pageId) {
+      pageId = page.id;
+      window.history.replaceState({}, '', `/admin/editor.html?page=${encodeURIComponent(pageId)}`);
+    }
     draft = normalizePageJson(page.draft_json);
     pageTitle.textContent = page.title;
     pageMeta.textContent = `/${page.slug}`;

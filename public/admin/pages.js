@@ -110,7 +110,7 @@ function renderPages() {
   pagesBody.innerHTML = pages.map((page) => `
     <tr>
       <td><strong>${escapeHtml(page.title)}</strong></td>
-      <td><code>/${escapeHtml(page.slug)}</code></td>
+      <td><code>${page.slug ? `/${escapeHtml(page.slug)}` : '/'}</code></td>
       <td><span class="admin-badge ${page.status === 'published' ? 'published' : ''}">${escapeHtml(statusLabel(page.status))}</span></td>
       <td>${escapeHtml(formatDate(page.updated_at))}</td>
       <td>${page.is_home ? '<span class="admin-badge home">Home</span>' : `<button class="secondary compact" type="button" data-action="home" data-id="${page.id}">Definir</button>`}</td>
@@ -145,6 +145,7 @@ function showStatus(message, type) {
 }
 
 function statusLabel(status) {
+  if (status === 'static') return 'Home atual';
   return status === 'published' ? 'Publicado' : 'Rascunho';
 }
 

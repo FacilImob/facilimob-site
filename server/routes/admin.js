@@ -13,6 +13,7 @@ const router = Router();
 const OTP_TTL_MINUTES = 10;
 const OTP_MAX_ATTEMPTS = 5;
 const MEDIA_BUCKET = 'site-media';
+const STATIC_HOME_PAGE_ID = 'static-home';
 
 router.post('/auth/request-code', async (req, res) => {
   const email = normalizeEmail(req.body?.email);
@@ -108,11 +109,16 @@ router.get('/pages', async (_req, res) => {
     return res.status(500).json({ error: 'Nao foi possivel listar as paginas.' });
   }
 
-  return res.json(data || []);
+  const pages = data || [];
+  if (!pages.some((page) => page.is_home)) {
+    pages.unshift(staticHomePageListItem());
+  }
+
+  return res.json(pages);
 });
 
 router.get('/pages/:id', async (req, res) => {
-  const page = await findPageById(req.params.id);
+  const page = req.params.id === STATIC_HOME_PAGE_ID ? await ensureHomeDraftPage() : await findPageById(req.params.id);
 
   if (!page) {
     return res.status(404).json({ error: 'Pagina nao encontrada.' });
@@ -481,6 +487,61 @@ async function uniquePageSlug(baseSlug) {
 
 function emptyPageJson() {
   return { sections: [] };
+}
+
+function staticHomePageListItem() {
+  return {
+    id: STATIC_HOME_PAGE_ID,
+    title: 'Home atual',
+    slug: '',
+    is_home: true,
+    status: 'static',
+    seo_title: 'FacilImob | Garantia de Aluguel',
+    seo_description: 'Garantia locaticia digital para alugar sem fiador, sem caucao e com processo simples.',
+    created_at: null,
+    updated_at: null,
+    published_at: null,
+    draft_json: emptyPageJson(),
+    published_json: null,
+    is_static_home: true
+  };
+}
+
+async function ensureHomeDraftPage() {
+  const { data: existing, error: findError } = await siteSupabaseAdmin
+    .from('pages')
+    .select('id,title,slug,is_home,status,seo_title,seo_description,created_at,updated_at,published_at,draft_json,published_json')
+    .eq('is_home', true)
+    .maybeSingle();
+
+  if (findError) {
+    console.error('[admin-pages:ensure-home] pages select error', findError.message);
+    return null;
+  }
+
+  if (existing) return existing;
+
+  const slug = await uniquePageSlug('home');
+  const { data, error } = await siteSupabaseAdmin
+    .from('pages')
+    .insert({
+      title: 'Home atual',
+      slug,
+      is_home: true,
+      status: 'draft',
+      draft_json: emptyPageJson(),
+      seo_title: 'FacilImob | Garantia de Aluguel',
+      seo_description: 'Garantia locaticia digital para alugar sem fiador, sem caucao e com processo simples.'
+    })
+    .select('id,title,slug,is_home,status,seo_title,seo_description,created_at,updated_at,published_at,draft_json,published_json')
+    .single();
+
+  if (error) {
+    console.error('[admin-pages:ensure-home] pages insert error', error.message);
+    return null;
+  }
+
+  return data;
 }
 
 function normalizePageJson(value) {
