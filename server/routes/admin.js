@@ -118,7 +118,8 @@ router.get('/pages', async (_req, res) => {
 });
 
 router.get('/pages/:id', async (req, res) => {
-  const page = req.params.id === STATIC_HOME_PAGE_ID ? await ensureHomeDraftPage() : await findPageById(req.params.id);
+  const foundPage = req.params.id === STATIC_HOME_PAGE_ID ? null : await findPageById(req.params.id);
+  const page = req.params.id === STATIC_HOME_PAGE_ID || foundPage?.is_home ? await ensureHomeDraftPage() : foundPage;
 
   if (!page) {
     return res.status(404).json({ error: 'Pagina nao encontrada.' });
@@ -520,10 +521,11 @@ async function ensureHomeDraftPage() {
   }
 
   if (existing) {
-    if (isEmptyPageJson(existing.draft_json) && !existing.published_json) {
+    if (isEmptyPageJson(existing.draft_json)) {
+      const seededDraft = isEmptyPageJson(existing.published_json) ? homePageJson() : normalizePageJson(existing.published_json);
       const { data, error } = await siteSupabaseAdmin
         .from('pages')
-        .update({ draft_json: homePageJson(), seo_title: existing.seo_title || 'FacilImob | Garantia de Aluguel', seo_description: existing.seo_description || 'Garantia locaticia digital para alugar sem fiador, sem caucao e com processo simples.' })
+        .update({ draft_json: seededDraft, seo_title: existing.seo_title || 'FacilImob | Garantia de Aluguel', seo_description: existing.seo_description || 'Garantia locaticia digital para alugar sem fiador, sem caucao e com processo simples.' })
         .eq('id', existing.id)
         .select('id,title,slug,is_home,status,seo_title,seo_description,created_at,updated_at,published_at,draft_json,published_json')
         .single();
