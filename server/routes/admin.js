@@ -14,6 +14,7 @@ const OTP_TTL_MINUTES = 10;
 const OTP_MAX_ATTEMPTS = 5;
 const MEDIA_BUCKET = 'site-media';
 const STATIC_HOME_PAGE_ID = 'static-home';
+const HOME_TEMPLATE_VERSION = 2;
 
 router.post('/auth/request-code', async (req, res) => {
   const email = normalizeEmail(req.body?.email);
@@ -521,8 +522,10 @@ async function ensureHomeDraftPage() {
   }
 
   if (existing) {
-    if (isEmptyPageJson(existing.draft_json)) {
-      const seededDraft = isEmptyPageJson(existing.published_json) ? homePageJson() : normalizePageJson(existing.published_json);
+    if (isEmptyPageJson(existing.draft_json) || shouldRefreshHomeTemplate(existing.draft_json)) {
+      const seededDraft = isEmptyPageJson(existing.published_json) || shouldRefreshHomeTemplate(existing.draft_json)
+        ? homePageJson()
+        : normalizePageJson(existing.published_json);
       const { data, error } = await siteSupabaseAdmin
         .from('pages')
         .update({ draft_json: seededDraft, seo_title: existing.seo_title || 'FacilImob | Garantia de Aluguel', seo_description: existing.seo_description || 'Garantia locaticia digital para alugar sem fiador, sem caucao e com processo simples.' })
@@ -573,9 +576,17 @@ function isEmptyPageJson(value) {
   return !value || !Array.isArray(value.sections) || value.sections.length === 0;
 }
 
+function shouldRefreshHomeTemplate(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  if (Number(value.homeTemplateVersion || 0) >= HOME_TEMPLATE_VERSION) return false;
+  const sectionIds = new Set((value.sections || []).map((section) => section?.id));
+  return sectionIds.has('home_hero') && sectionIds.has('home_features') && sectionIds.has('home_contact');
+}
+
 function homePageJson() {
   return {
     pageWidth: '1180px',
+    homeTemplateVersion: HOME_TEMPLATE_VERSION,
     sections: [
       section('home_header', { padding: { top: 18, bottom: 18, left: 24, right: 24 }, background: '#ffffff' }, [
         row('home_header_row', [
@@ -626,10 +637,10 @@ function homePageJson() {
         ])
       ]),
       cardGridSection('home_steps', 'Como funciona', 'Quatro passos para sair da duvida.', [
-        card('step_1', '', '1. Envie seus dados', 'Preencha o formulario com suas informacoes de contato e perfil.'),
-        card('step_2', '', '2. Fazemos a analise', 'Avaliamos a solicitacao para orientar o melhor caminho.'),
-        card('step_3', '', '3. Receba o retorno', 'Voce recebe as proximas orientacoes com clareza e objetividade.'),
-        card('step_4', '', '4. Siga com a locacao', 'Com a garantia encaminhada, o aluguel pode avancar com menos entraves.')
+        card('step_1', '', 'Envie seus dados', 'Preencha o formulario com suas informacoes de contato e perfil.', '1'),
+        card('step_2', '', 'Fazemos a analise', 'Avaliamos a solicitacao para orientar o melhor caminho.', '2'),
+        card('step_3', '', 'Receba o retorno', 'Voce recebe as proximas orientacoes com clareza e objetividade.', '3'),
+        card('step_4', '', 'Siga com a locacao', 'Com a garantia encaminhada, o aluguel pode avancar com menos entraves.', '4')
       ]),
       section('home_audience', { background: '#e8f3fb' }, [
         row('home_audience_heading', [column('home_audience_heading_col', 12, [text('home_audience_eyebrow', 'Para cada etapa da locacao', 'p', '#f4770b'), text('home_audience_title', 'Informacao clara para quem aluga e para quem tem imovel.', 'h2', '#003f75')])]),
@@ -698,16 +709,16 @@ function html(id, code, height = '180px') {
 function cardGridSection(id, eyebrow, title, cards) {
   return section(id, {}, [
     row(`${id}_heading`, [column(`${id}_heading_col`, 12, [text(`${id}_eyebrow`, eyebrow, 'p', '#f4770b'), text(`${id}_title`, title, 'h2', '#003f75')])]),
-    row(`${id}_cards`, cards.map((item, index) => column(`${id}_card_col_${index + 1}`, 12 / cards.length, [container(item.id, [...(item.image ? [image(`${item.id}_image`, item.image, '', '48px')] : []), text(`${item.id}_title`, item.title, 'h3', '#003f75'), text(`${item.id}_copy`, item.copy, 'p', '#657180')])])))
+    row(`${id}_cards`, cards.map((item, index) => column(`${id}_card_col_${index + 1}`, 12 / cards.length, [container(item.id, [...(item.badge ? [html(`${item.id}_badge`, `<style>body{margin:0}.step-badge{align-items:center;background:#e8f3fb;border-radius:8px;color:#005da3;display:inline-flex;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-weight:900;height:38px;justify-content:center;width:38px}</style><span class="step-badge">${item.badge}</span>`, '38px')] : []), ...(item.image ? [image(`${item.id}_image`, item.image, '', '48px')] : []), text(`${item.id}_title`, item.title, 'h3', '#003f75'), text(`${item.id}_copy`, item.copy, 'p', '#657180')])])))
   ]);
 }
 
-function card(id, imageUrl, title, copy) {
-  return { id, image: imageUrl, title, copy };
+function card(id, imageUrl, title, copy, badge = '') {
+  return { id, image: imageUrl, title, copy, badge };
 }
 
 function benefitList(items) {
-  return `<div style="display:grid;gap:14px">${items.map(([title, copy]) => `<div><strong style="display:block;color:#003f75">${title}</strong><span style="color:#657180">${copy}</span></div>`).join('')}</div>`;
+  return `<style>body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.benefit-list{display:grid;gap:12px;margin-top:8px}.benefit-list div{background:#f6f8fb;border:1px solid #d9e2ec;border-radius:8px;display:grid;gap:4px;padding:16px 18px}.benefit-list strong{color:#1f2a37;font-size:17px}.benefit-list span{color:#657180;line-height:1.55}</style><div class="benefit-list">${items.map(([title, copy]) => `<div><strong>${title}</strong><span>${copy}</span></div>`).join('')}</div>`;
 }
 
 function faqHtml() {
@@ -719,11 +730,11 @@ function faqHtml() {
     ['A garantia tambem ajuda o proprietario?', 'Sim. Ela ajuda a organizar a locacao com mais seguranca, menos incerteza e mais clareza sobre o processo.'],
     ['Como falo com a FacilImob?', 'Voce pode preencher o formulario ou chamar diretamente pelo WhatsApp.']
   ];
-  return `<div style="display:grid;gap:12px">${items.map(([question, answer], index) => `<details ${index === 0 ? 'open' : ''} style="background:#fff;border:1px solid #d9e2ec;border-radius:8px;padding:16px"><summary style="font-weight:800;color:#003f75">${question}</summary><p style="color:#657180">${answer}</p></details>`).join('')}</div>`;
+  return `<style>body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.faq-grid{display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr))}details{background:#fff;border:1px solid #d9e2ec;border-radius:8px;box-shadow:0 8px 26px rgba(31,42,55,.06);padding:20px 22px}summary{cursor:pointer;font-size:18px;font-weight:850;color:#1f2a37}p{color:#657180;line-height:1.55;margin:12px 0 0}@media(max-width:980px){.faq-grid{grid-template-columns:1fr}}</style><div class="faq-grid">${items.map(([question, answer], index) => `<details ${index === 0 ? 'open' : ''}><summary>${question}</summary><p>${answer}</p></details>`).join('')}</div>`;
 }
 
 function contactFormHtml() {
-  return `<form data-whatsapp-form style="display:grid;gap:14px;background:#fff;border:1px solid #d9e2ec;border-radius:8px;padding:22px"><label>Nome completo<input name="name" required style="display:block;width:100%;min-height:42px;margin-top:6px"></label><label>Telefone/WhatsApp<input name="phone" required style="display:block;width:100%;min-height:42px;margin-top:6px"></label><label>E-mail<input name="email" type="email" required style="display:block;width:100%;min-height:42px;margin-top:6px"></label><label style="display:flex;gap:8px"><input name="consent" type="checkbox" required><span>Concordo em enviar meus dados para receber contato da FacilImob.</span></label><button type="submit" style="background:#f4770b;color:#fff;border:0;border-radius:8px;min-height:46px;font-weight:800">Falar com um consultor</button><p data-form-status role="status"></p></form>`;
+  return `<style>body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.lead-form{background:#fff;border:1px solid #d9e2ec;border-radius:8px;box-shadow:0 8px 26px rgba(31,42,55,.06);display:grid;gap:16px;grid-template-columns:repeat(2,minmax(0,1fr));padding:28px}.lead-form label{display:grid;gap:7px}.lead-form span{color:#344054;font-size:13px;font-weight:800}.lead-form input{border:1px solid #d9e2ec;border-radius:8px;color:#1f2a37;min-height:46px;padding:11px 12px;width:100%}.full{grid-column:1/-1}.consent{align-items:start;display:grid!important;gap:10px!important;grid-template-columns:18px 1fr}.consent input{min-height:auto;margin-top:3px;width:18px}.consent a{color:#005da3;text-decoration:underline;text-underline-offset:3px}.button{align-items:center;background:#f4770b;border:0;border-radius:8px;color:#fff;display:inline-flex;font-weight:800;justify-content:center;min-height:46px;padding:12px 18px}.form-status{color:#005da3;font-weight:800;grid-column:1/-1;margin:0;min-height:20px}@media(max-width:640px){.lead-form{grid-template-columns:1fr;padding:20px}}</style><form class="lead-form" data-whatsapp-form><label><span>Nome completo</span><input name="name" autocomplete="name" required></label><label><span>Telefone/WhatsApp</span><input name="phone" autocomplete="tel" inputmode="tel" required></label><label><span>E-mail</span><input name="email" type="email" autocomplete="email" required></label><label class="consent full"><input name="consent" type="checkbox" required><span>Concordo em enviar meus dados para receber contato da FacilImob sobre garantia de aluguel e aceito a <a href="/politica-de-privacidade.html">Politica de Privacidade</a> e os <a href="/termos-de-uso.html">Termos de Uso</a>.</span></label><button class="button full" type="submit">Falar com um consultor</button><p class="form-status" data-form-status role="status" aria-live="polite"></p></form>`;
 }
 
 function clean(value) {
